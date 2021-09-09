@@ -91,7 +91,7 @@ tuple<void * , uint> MemPool::writeRecord(uint recordSize) {
     tuple<void * , uint> recordAddress(blkPtr, curBlkUsed);
 
     memPoolUsedRecords+=recordSize;
-    curBlkUsed+=recordSize;
+    curBlkUsed+=recordSize; //test
 
     return recordAddress;
 }
