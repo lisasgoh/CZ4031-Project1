@@ -30,7 +30,7 @@ int main() {
 
     ifstream dataFile("data/data_short.tsv");
 
-    MemPool memPool{100000000, 100};
+    MemoryPool memPool{100000000, 100};
 
     vector<tuple<void *, uint>> dataset;
     bool flag = true;
@@ -71,14 +71,14 @@ int main() {
 
         cout << "<------------------- Database Statistics ------------------->"
              << "\n";
-        cout << "1. Size of Memory Pool: " << memPool.getMemPoolSize() << "\n";
-        cout << "2. Size of 1 block: " << memPool.getBlkSize() << "\n";
+        cout << "1. Size of Memory Pool: " << memPool.getPoolSize() << "\n";
+        cout << "2. Size of 1 block: " << memPool.getBlockSize() << "\n";
         cout << "3. Number of blocks available at start: "
-             << memPool.getMemPoolSize() / memPool.getBlkSize() << "\n";
-        cout << "4. Number of allocated blocks: " << memPool.getNumAllocBlks()
+             << memPool.getPoolSize() / memPool.getBlockSize() << "\n";
+        cout << "4. Number of allocated blocks: " << memPool.getBlocksAssigned()
              << "\n";
-        cout << "5. Number of available blocks: " << memPool.getNumAvailBlks()
-             << "\n"
+        cout << "5. Number of available blocks: "
+             << memPool.getBlocksAvailable() << "\n"
              << '\n';
 
         dataFile.close();
@@ -100,8 +100,8 @@ int main() {
         uint offset = get<1>(*recordsIterator);
 
         if (blocksInMemory.find(blockAddress) == blocksInMemory.end()) {
-            void *mainMemoryBlock = operator new(memPool.getBlkSize());
-            memcpy(mainMemoryBlock, blockAddress, memPool.getBlkSize());
+            void *mainMemoryBlock = operator new(memPool.getBlockSize());
+            memcpy(mainMemoryBlock, blockAddress, memPool.getBlockSize());
 
             blocksInMemory[blockAddress] = mainMemoryBlock;
         }
