@@ -17,10 +17,10 @@ typedef unsigned char uchar;
 
 int main() {
     cout << "<------------------- Database Storage Component "
-            "------------------->\n"
-            "Database is created by allocating a memory pool, divided into "
-            "blocks\n"
-            "We shall make use of a fixed-size memory pool for storage"
+         "------------------->\n"
+         "Database is created by allocating a memory pool, divided into "
+         "blocks\n"
+         "We shall make use of a fixed-size memory pool for storage"
          << "\n"
          << "\n";
 
@@ -95,7 +95,7 @@ int main() {
     // BTree t(3);
     int i = 0;
     for (recordsIterator = dataset.begin(); recordsIterator != dataset.end();
-         ++recordsIterator) {
+            ++recordsIterator) {
         void *blockAddress = (uchar *)get<0>(*recordsIterator);
         uint offset = get<1>(*recordsIterator);
 
