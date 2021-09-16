@@ -22,7 +22,7 @@ struct Record {
 };
 
 class MemoryPool {
-   private:
+private:
     uchar *poolPtr;    // start address of memory pool
     uchar *blockPtr;   // start address of current block
     uint blockOffset;  // offset of current block
@@ -36,7 +36,7 @@ class MemoryPool {
     int numBlocksAvailable;
     int numRecordsAssigned;
 
-   public:
+public:
     /**
      * Constructor
      * @param poolSize Buffer pool size
@@ -76,37 +76,49 @@ class MemoryPool {
      * Returns the block size
      * @return block size
      */
-    uint getBlockSize() { return blockSize; }
+    uint getBlockSize() {
+        return blockSize;
+    }
 
     /**
      * Returns the memory pool's size
      * @return memory pool's size
      */
-    uint getPoolSize() { return poolSize; }
+    uint getPoolSize() {
+        return poolSize;
+    }
 
     /**
      * Returns the number of blocks assigned in memory pool
      * @return number of blocks assigned in memory pool
      */
-    int getBlocksAssigned() { return numBlocksAssigned; }
+    int getBlocksAssigned() {
+        return numBlocksAssigned;
+    }
 
     /**
      * Returns the number of blocks available in memory pool
      * @return number of blocks available in memory pool
      */
-    int getBlocksAvailable() { return numBlocksAvailable; }
+    int getBlocksAvailable() {
+        return numBlocksAvailable;
+    }
 
     /**
      * Returns the number of records assigned in memory pool
      * @return number of records assigned in memory pool
      */
-    int getNumberOfRecords() { return numRecordsAssigned; }
+    int getNumberOfRecords() {
+        return numRecordsAssigned;
+    }
 
     /**
      * Returns the database size in MB
      * @return database size in MB
      */
-    int getDatabaseSizeInMB() { return sizeOfAssignedRecords / pow(2, 20); }
+    int getDatabaseSizeInMB() {
+        return sizeOfAssignedRecords / pow(2, 20);
+    }
 };
 
 #endif  // MEMORY_POOL_H
