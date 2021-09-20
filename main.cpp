@@ -9,8 +9,7 @@ using namespace std;
 #include <unordered_map>
 #include <vector>
 
-// Import from other files
-#include "b-plus-tree.cpp"
+#include "b-plus-tree.h"
 #include "memory-pool.h"
 
 typedef unsigned int uint;
