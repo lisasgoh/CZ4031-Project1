@@ -6,7 +6,7 @@
 #include "memory-pool.h"
 using namespace std;
 
-struct keys_struct{
+struct keys_struct {
     float key_value;
     vector <void*> add_vect;
 };

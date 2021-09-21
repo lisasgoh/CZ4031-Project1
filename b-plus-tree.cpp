@@ -11,93 +11,93 @@ Node::Node()
 }
 
 void BPTree::insertInternal(keys_struct x, Node* cursor, Node* child)
+{
+    if(cursor->size < MAX)
     {
-        if(cursor->size < MAX)
+        //if cursor is not full
+        //find the correct position for new key
+        int i = 0;
+        while(x.key_value > cursor->key[i].key_value && i < cursor->size) i++;
+        //make space for new key
+        for(int j = cursor->size; j > i; j--)
         {
-            //if cursor is not full
-            //find the correct position for new key
-            int i = 0;
-            while(x.key_value > cursor->key[i].key_value && i < cursor->size) i++;
-            //make space for new key
-            for(int j = cursor->size;j > i; j--)
-            {
-                cursor->key[j] = cursor->key[j-1];
-            }//make space for new pointer
-            for(int j = cursor->size+1; j > i+1; j--)
-            {
-                cursor->ptr[j] = cursor->ptr[j-1];
-            }
-            cursor->key[i] = x;
-            cursor->size++;
-            cursor->ptr[i+1] = child;
-            // cout<<"Inserted key in an Internal node successfully\n";
+            cursor->key[j] = cursor->key[j-1];
+        }//make space for new pointer
+        for(int j = cursor->size+1; j > i+1; j--)
+        {
+            cursor->ptr[j] = cursor->ptr[j-1];
+        }
+        cursor->key[i] = x;
+        cursor->size++;
+        cursor->ptr[i+1] = child;
+        // cout<<"Inserted key in an Internal node successfully\n";
+    }
+    else
+    {
+        // cout<<"Inserted key in an Internal node successfully\n";
+        // cout<<"Overflow in internal node!\nSplitting internal node\n";
+        //if overflow in internal node
+        //create new internal node
+        Node* newInternal = new Node;
+        //create virtual Internal Node;
+        keys_struct virtualKey[MAX+1];
+        Node* virtualPtr[MAX+2];
+        for(int i = 0; i < MAX; i++)
+        {
+            virtualKey[i] = cursor->key[i];
+        }
+        for(int i = 0; i < MAX+1; i++)
+        {
+            virtualPtr[i] = cursor->ptr[i];
+        }
+        int i = 0, j;
+        while(x.key_value > virtualKey[i].key_value && i < MAX) i++;
+        //make space for new key
+        for(int j = MAX+1; j > i; j--)
+        {
+            virtualKey[j] = virtualKey[j-1];
+        }
+        virtualKey[i] = x;
+        //make space for new ptr
+        for(int j = MAX+2; j > i+1; j--)
+        {
+            virtualPtr[j] = virtualPtr[j-1];
+        }
+        virtualPtr[i+1] = child;
+        newInternal->IS_LEAF = false;
+        //split cursor into two nodes
+        cursor->size = (MAX+1)/2;
+        newInternal->size = MAX-(MAX+1)/2;
+        //give elements and pointers to the new node
+        for(i = 0, j = cursor->size+1; i < newInternal->size; i++, j++)
+        {
+            newInternal->key[i] = virtualKey[j];
+        }
+        for(i = 0, j = cursor->size+1; i < newInternal->size+1; i++, j++)
+        {
+            newInternal->ptr[i] = virtualPtr[j];
+        }
+        // m = cursor->key[cursor->size]
+        if(cursor == root)
+        {
+            //if cursor is a root node, we create a new root
+            Node* newRoot = new Node;
+            newRoot->key[0] = cursor->key[cursor->size];
+            newRoot->ptr[0] = cursor;
+            newRoot->ptr[1] = newInternal;
+            newRoot->IS_LEAF = false;
+            newRoot->size = 1;
+            root = newRoot;
+            //cout<<"Created new root\n";
         }
         else
         {
-            // cout<<"Inserted key in an Internal node successfully\n";
-            // cout<<"Overflow in internal node!\nSplitting internal node\n";
-            //if overflow in internal node
-            //create new internal node
-            Node* newInternal = new Node;
-            //create virtual Internal Node;
-            keys_struct virtualKey[MAX+1];
-            Node* virtualPtr[MAX+2];
-            for(int i = 0; i < MAX; i++)
-            {
-                virtualKey[i] = cursor->key[i];
-            }
-            for(int i = 0; i < MAX+1; i++)
-            {
-                virtualPtr[i] = cursor->ptr[i];
-            }
-            int i = 0, j;
-            while(x.key_value > virtualKey[i].key_value && i < MAX) i++;
-            //make space for new key
-            for(int j = MAX+1;j > i; j--)
-            {
-                virtualKey[j] = virtualKey[j-1];
-            }
-            virtualKey[i] = x;
-            //make space for new ptr
-            for(int j = MAX+2;j > i+1; j--)
-            {
-                virtualPtr[j] = virtualPtr[j-1];
-            }
-            virtualPtr[i+1] = child;
-            newInternal->IS_LEAF = false;
-            //split cursor into two nodes
-            cursor->size = (MAX+1)/2;
-            newInternal->size = MAX-(MAX+1)/2;
-            //give elements and pointers to the new node
-            for(i = 0, j = cursor->size+1; i < newInternal->size; i++, j++)
-            {
-                newInternal->key[i] = virtualKey[j];
-            }
-            for(i = 0, j = cursor->size+1; i < newInternal->size+1; i++, j++)
-            {
-                newInternal->ptr[i] = virtualPtr[j];
-            }
-            // m = cursor->key[cursor->size]
-            if(cursor == root)
-            {
-                //if cursor is a root node, we create a new root
-                Node* newRoot = new Node;
-                newRoot->key[0] = cursor->key[cursor->size];
-                newRoot->ptr[0] = cursor;
-                newRoot->ptr[1] = newInternal;
-                newRoot->IS_LEAF = false;
-                newRoot->size = 1;
-                root = newRoot;
-                //cout<<"Created new root\n";
-            }
-            else
-            {
-                //recursion
-                //find depth first search to find parent of cursor
-                insertInternal(cursor->key[cursor->size] ,findParent(root,cursor) ,newInternal);
-            }
+            //recursion
+            //find depth first search to find parent of cursor
+            insertInternal(cursor->key[cursor->size],findParent(root,cursor),newInternal);
         }
     }
+}
 
 void BPTree::removeInternal(keys_struct x, Node* cursor, Node* child)
 {
@@ -307,7 +307,7 @@ Node* BPTree::findParent(Node* cursor, Node* child)
 }
 
 BPTree::BPTree()
-: root{NULL}
+    : root{NULL}
 {
 }
 
@@ -382,15 +382,15 @@ Node* BPTree::search(float x, bool flag, bool printer)
         return nullptr;
     }
 }
-    
-int BPTree::height(Node* cursor){
-    if(cursor->IS_LEAF==false){
+
+int BPTree::height(Node* cursor) {
+    if(cursor->IS_LEAF==false) {
         return height(cursor->ptr[0])+1;
     }
-    else if(cursor->IS_LEAF==true){
+    else if(cursor->IS_LEAF==true) {
         return 1;
     }
-    else{
+    else {
         return NULL;
     }
 }
@@ -413,7 +413,7 @@ void BPTree::insert(keys_struct x)
 
         Node* searchRes;
         searchRes = search(x.key_value, false, false);
-        if ( searchRes != nullptr){
+        if ( searchRes != nullptr) {
             for(int i = 0; i < searchRes->size; i++)
             {
                 if(searchRes->key[i].key_value == x.key_value)
@@ -450,7 +450,7 @@ void BPTree::insert(keys_struct x)
             int i = 0;
             while(x.key_value > cursor->key[i].key_value && i < cursor->size) i++;
             //make space for new key
-            for(int j = cursor->size;j > i; j--)
+            for(int j = cursor->size; j > i; j--)
             {
                 cursor->key[j] = cursor->key[j-1];
             }
@@ -476,7 +476,7 @@ void BPTree::insert(keys_struct x)
             int i = 0, j;
             while(x.key_value > virtualNode[i].key_value && i < MAX) i++;
             //make space for new key
-            for(int j = MAX+1;j > i; j--)
+            for(int j = MAX+1; j > i; j--)
             {
                 virtualNode[j] = virtualNode[j-1];
             }
@@ -520,7 +520,7 @@ void BPTree::insert(keys_struct x)
         }
     }
 }
-    
+
 void BPTree::remove(keys_struct x)
 {
     //delete logic
@@ -704,13 +704,13 @@ void BPTree::remove(keys_struct x)
 int BPTree::display(Node* cursor, int nodecount, bool first)
 {
     if (first == true) {
-        for (int i = 0;i<cursor->size+1 ; i++){
+        for (int i = 0; i<cursor->size+1 ; i++) {
             if (i!=cursor->size) {
                 cout << 0 << " " << cursor->key[i].key_value << "\n";
             }
             cout << 1 << "\n";
             //cout << cursor->ptr[i]->size << " Size \n";
-            for (int j = 0; j<cursor->ptr[i]->size; j++){
+            for (int j = 0; j<cursor->ptr[i]->size; j++) {
                 cout << cursor->ptr[i]->key[j].key_value << " ";
             }
             cout << "\n";
@@ -718,29 +718,31 @@ int BPTree::display(Node* cursor, int nodecount, bool first)
         return 0;
     }
     else {
-    int thisnode;
-    if (cursor->IS_LEAF == false) {
-        for (int i = 0; i < cursor->size + 1; i++) {
-            thisnode = display(cursor->ptr[i], 0, false);
-            nodecount = nodecount + thisnode;
-            //cout<<"\n"<<nodecount<<"\n";
+        int thisnode;
+        if (cursor->IS_LEAF == false) {
+            for (int i = 0; i < cursor->size + 1; i++) {
+                thisnode = display(cursor->ptr[i], 0, false);
+                nodecount = nodecount + thisnode;
+                //cout<<"\n"<<nodecount<<"\n";
 
-            //read(curr->child_ptr[i]);
+                //read(curr->child_ptr[i]);
 
+            }
+            nodecount++;
+            return nodecount;
         }
-        nodecount++;
-        return nodecount;
-    }
-    if (cursor->IS_LEAF == true) {
+        if (cursor->IS_LEAF == true) {
 
-        for (int i = 0; i < cursor->size; i++) {
-            cout << cursor->key[i].key_value << " ";
+            for (int i = 0; i < cursor->size; i++) {
+                cout << cursor->key[i].key_value << " ";
+            }
+            return 1;
         }
-        return 1;
+        return 0;
     }
-    return 0;
-}
 }
 
 
-Node* BPTree::getRoot() { return root; }
+Node* BPTree::getRoot() {
+    return root;
+}
