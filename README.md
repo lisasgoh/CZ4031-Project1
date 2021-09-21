@@ -4,7 +4,7 @@
 
 # Running `main.exe`
 
-`./main.exe`
+`.\main.exe`
 
 # Workflow
 git stash
