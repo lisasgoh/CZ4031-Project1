@@ -20,7 +20,7 @@ int main() {
           "We shall write a short summary of the implementation of this database here.\n"
           << "\n";
 
-     cout << "Data reading in progress...\n";
+    cout << "Data reading in progress...\n";
 
      // Reading of TSV file
      ifstream data_file("data/data_short.tsv");
@@ -33,7 +33,7 @@ int main() {
      // Data reading process
      if (data_file.is_open()) {
 
-          string line;
+        string line;
 
           while (getline(data_file, line)) {
                if (start_of_file_flag) {
@@ -41,14 +41,14 @@ int main() {
                     continue;
                }
 
-               Record record;
-               string tempLine;
+            Record record;
+            string tempLine;
 
-               // copy bytes till we encounter tabspace
-               strcpy(record.tconst, line.substr(0, line.find('\t')).c_str());
+            // copy bytes till we encounter tabspace
+            strcpy(record.tconst, line.substr(0, line.find('\t')).c_str());
 
-               stringstream linestream(line);
-               getline(linestream, tempLine, '\t');
+            stringstream linestream(line);
+            getline(linestream, tempLine, '\t');
 
                linestream >> record.averageRating >> record.numVotes;
                tuple <void *, uint> dataRecord = memory_pool.writeRecord(sizeof(record));
@@ -64,7 +64,7 @@ int main() {
                memcpy(rcdAdr, &record, sizeof(record));
           }
 
-          cout << "Reading completed!\n";
+        cout << "Reading completed!\n";
 
           cout << "\n---------------- Database Statistics ----------------\n";
           cout << "1. Size of Memory Pool: " << memory_pool.getPoolSize() << "\n";
@@ -112,8 +112,8 @@ int main() {
           key.add_vect.push_back((uchar *) memory_block.at(blockAddress) + offset);
           root_node.insert(key);
 
-          i++;
-     }
+        i++;
+    }
 
      cout << "Insertion into B+ tree completed!\n";
 
@@ -139,5 +139,7 @@ int main() {
 
      cout << root_node.display(root_node.getRoot(), count, true) << "\n";
 
-     return 0;
+    cout << node.display(node.getRoot(), count, true) << "\n";
+
+    return 0;
 }
