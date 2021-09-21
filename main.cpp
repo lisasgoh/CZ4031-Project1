@@ -17,22 +17,24 @@ typedef unsigned int uint;
 typedef unsigned char uchar;
 
 int main() {
-    cout << "\n---------------- Welcome to the Database Management System ----------------\n"
-         "We shall write a short summary of the implementation of this database here.\n"
-         << "\n";
+  cout << "\n---------------- Welcome to the Database Management System "
+          "----------------\n"
+          "We shall write a short summary of the implementation of this "
+          "database here.\n"
+       << "\n";
 
   cout << "Data reading in progress...\n";
 
-    // Reading of TSV file
-    ifstream data_file("data/data_short.tsv");
+  // Reading of TSV file
+  ifstream data_file("data/data_short.tsv");
 
-    // Initialise memory pool
-    MemoryPool memory_pool{100000000, 100};
-    vector <tuple<void *, uint>> data;
-    bool start_of_file_flag = true;
+  // Initialise memory pool
+  MemoryPool memory_pool{100000000, 100};
+  vector<tuple<void *, uint>> data;
+  bool start_of_file_flag = true;
 
-    // Data reading process
-    if (data_file.is_open()) {
+  // Data reading process
+  if (data_file.is_open()) {
 
     string line;
 
@@ -79,68 +81,70 @@ int main() {
           data_file.close();
      }
 
-    // key:value pair to hold pair of memory addresses.
-    unordered_map <void *, void *> memory_block;
+  // key:value pair to hold pair of memory addresses.
+  unordered_map<void *, void *> memory_block;
 
-    // vector of tuples of record addresses <block address, relative record address>
-    vector <tuple <void *, uint>> :: iterator records_iterator;
+  // vector of tuples of record addresses <block address, relative record
+  // address>
+  vector<tuple<void *, uint>>::iterator records_iterator;
 
-    // Initialise new B+ tree node
-    BPTree root_node;
-    int search_index;
-    int i = 0;
+  // Initialise new B+ tree node
+  BPTree root_node;
+  int search_index;
+  int i = 0;
 
-    cout << "Inserting records into B+ tree in progress...\n";
+  cout << "Inserting records into B+ tree in progress...\n";
 
-    // Insert records into B+ tree
-    for (records_iterator = data.begin(); records_iterator != data.end(); ++records_iterator) {
+  // Insert records into B+ tree
+  for (records_iterator = data.begin(); records_iterator != data.end();
+       ++records_iterator) {
 
-        void *blockAddress = (uchar *) get <0> (*records_iterator);
-        uint offset = get<1>(*records_iterator);
+    void *blockAddress = (uchar *)get<0>(*records_iterator);
+    uint offset = get<1>(*records_iterator);
 
-        if (memory_block.find(blockAddress) == memory_block.end()) {
-            void *main_memory_block = operator new(memory_pool.getBlockSize());
-            memcpy(main_memory_block, blockAddress, memory_pool.getBlockSize());
+    if (memory_block.find(blockAddress) == memory_block.end()) {
+      void *main_memory_block = operator new(memory_pool.getBlockSize());
+      memcpy(main_memory_block, blockAddress, memory_pool.getBlockSize());
 
-            memory_block[blockAddress] = main_memory_block;
-        }
-
-        void *recordAddress = (uchar *) memory_block.at(blockAddress) + offset;
-        float num = (*(Record *)recordAddress).averageRating;
-
-        keys_struct key;
-        key.key_value = num;
-        key.add_vect.push_back((uchar *) memory_block.at(blockAddress) + offset);
-        root_node.insert(key);
-
-        i++;
+      memory_block[blockAddress] = main_memory_block;
     }
 
-    cout << "Insertion into B+ tree completed!\n";
-
-    // Get B+ tree details
-    int count = 0;
-
-    cout << "\n";
-    cout << "B+ Tree Root: " << root_node.getRoot() << "\n";
-    cout << "B+ Tree Height: " << root_node.height(root_node.getRoot()) << "\n";
-
-    cout << "\n---------------- B+ Tree ----------------\n";
-    cout << root_node.display(root_node.getRoot(), count, true) << "\n";
-    cout << "\n";
-
-    root_node.search(9, true, false);
+    void *recordAddress = (uchar *)memory_block.at(blockAddress) + offset;
+    float num = (*(Record *)recordAddress).averageRating;
 
     keys_struct key;
-    key.key_value = 4.1;
-    key.add_vect.push_back((uchar *) nullptr);
+    key.key_value = num;
+    key.add_vect.push_back((uchar *)memory_block.at(blockAddress) + offset);
+    root_node.insert(key);
 
-    // Error from this line onwards
-    root_node.remove(key);
+    i++;
+  }
 
-    cout << root_node.display(root_node.getRoot(), count, true) << "\n";
+  cout << "Insertion into B+ tree completed!\n";
 
-    cout << root_node.display(root_node.getRoot(), count, true) << "\n";
+  // Get B+ tree details
+  int count = 0;
 
-    return 0;
+  cout << "\n";
+  cout << "B+ Tree Root: " << root_node.getRoot() << "\n";
+  cout << "B+ Tree Height: " << root_node.height(root_node.getRoot()) << "\n";
+
+  cout << "\n---------------- B+ Tree ----------------\n";
+  cout << root_node.display(root_node.getRoot(), count, true) << "\n";
+  cout << "\n";
+
+  root_node.search(9, true, false);
+
+  keys_struct key;
+  key.key_value = 4.1;
+  key.add_vect.push_back((uchar *)nullptr);
+
+  // Error from this line onwards
+  root_node.remove(key);
+
+  cout << root_node.display(root_node.getRoot(), count, true) << "\n";
+
+  cout << root_node.display(root_node.getRoot(), count, true) << "\n";
+
+  return 0;
 }
