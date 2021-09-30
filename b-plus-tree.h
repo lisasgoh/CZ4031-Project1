@@ -6,7 +6,7 @@
 #include "memory-pool.h"
 using namespace std;
 
-struct keys_struct{
+struct keys_struct {
     float key_value;
     vector <void*> add_vect;
 };
@@ -40,7 +40,9 @@ public:
     int display(Node* cursor, int nodecount, bool first);
     Node* getRoot();
     int getMax();
-    int getNumNode(){return numNode;}
+    int getNumNode() {
+        return numNode;
+    }
 //    void cleanUp(Node* cursor)
 //    {
 //        //clean up logic
