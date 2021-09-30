@@ -10,133 +10,117 @@ Node::Node()
     IS_LEAF = true;
 }
 
-void BPTree::insertInternal(keys_struct x, Node* cursor, Node* child)
-    {
-        if(cursor->size < MAX) // insert into current node if there is space in cursor
-        {
-            // since cursor is not full, linear search for position of new key
-            int newKeyPos = 0; // position of new key
-            while(x.key_value > cursor->key[newKeyPos].key_value && newKeyPos < cursor->size)
-            {
-                newKeyPos++;
-            }
-            //shift keys above new key up
-            for(int i = cursor->size;i > newKeyPos; i--)
-            {
-                cursor->key[i] = cursor->key[i-1];  //push each key above the position of inserted key up
-            }
-            //shift pointers above new pointer up
-            for(int i = cursor->size+1; i > newKeyPos+1; i--)
-            {
-                cursor->ptr[i] = cursor->ptr[i-1];
-            }
-            cursor->key[newKeyPos] = x;  // set new key
-            cursor->size++; //set new size
-            cursor->ptr[newKeyPos+1] = child;   // set new pointer
-            // cout<<"Inserted key in an Internal node successfully\n";
+void BPTree::insertInternal(keys_struct x, Node* cursor, Node* child){
+    // insert into current node if there is space in cursor
+    if(cursor->size < MAX){
+        // since cursor is not full, linear search for position of new key
+        int newKeyPos = 0; // position of new key
+        while(x.key_value > cursor->key[newKeyPos].key_value && newKeyPos < cursor->size){
+            newKeyPos++;
         }
-        else    // split internal node if overflow
-        {
-            // cout<<"Inserted key in an Internal node successfully\n";
-            // cout<<"Overflow in internal node!\nSplitting internal node\n";
+        //shift keys above new key up
+        for(int i = cursor->size;i > newKeyPos; i--){
+            cursor->key[i] = cursor->key[i-1];  //push each key above the position of inserted key up
+        }
+        //shift pointers above new pointer up
+        for(int i = cursor->size+1; i > newKeyPos+1; i--){
+            cursor->ptr[i] = cursor->ptr[i-1];
+        }
+        cursor->key[newKeyPos] = x;  // set new key
+        cursor->size++; //set new size
+        cursor->ptr[newKeyPos+1] = child;   // set new pointer
+        // cout<<"Inserted key in an Internal node successfully\n";
+    }
+        // split internal node if overflow
+    else{
+        // cout<<"Inserted key in an Internal node successfully\n";
+        // cout<<"Overflow in internal node!\nSplitting internal node\n";
 
-            // create another internal node when overflow
-            Node* newInternal = new Node;
-            newInternal->IS_LEAF = false;
+        // create another internal node when overflow
+        Node* newInternal = new Node;
+        newInternal->IS_LEAF = false;
 
-            // create temporary virtual Node to be split
-            // node with 1 extra key and pointer
-            keys_struct virtualKey[MAX+1];
-            Node* virtualPtr[MAX+2];
+        // create temporary virtual Node to be split
+        // node with 1 extra key and pointer
+        keys_struct virtualKey[MAX+1];
+        Node* virtualPtr[MAX+2];
 
-            // duplicate cursor node keys and pointers to virtual node
-            for(int i = 0; i < MAX; i++)
-            {
-                virtualKey[i] = cursor->key[i];
-            }
-            for(int i = 0; i < MAX+1; i++)
-            {
-                virtualPtr[i] = cursor->ptr[i];
-            }
-            int j;
-            int newKeyPos = 0;  // position of new key
+        // duplicate cursor node keys and pointers to virtual node
+        for(int i = 0; i < MAX; i++){
+            virtualKey[i] = cursor->key[i];
+        }
+        for(int i = 0; i < MAX+1; i++){
+            virtualPtr[i] = cursor->ptr[i];
+        }
+        int j;
+        int newKeyPos = 0;  // position of new key
 
-            // since cursor is not full, linear search for position of new key
-            while(x.key_value > virtualKey[newKeyPos].key_value && newKeyPos < MAX){
-                newKeyPos++;
-            }
+        // since cursor is not full, linear search for position of new key
+        while(x.key_value > virtualKey[newKeyPos].key_value && newKeyPos < MAX){
+            newKeyPos++;
+        }
 
-            //shift keys above new key up
-            for(int j = MAX+1;j > newKeyPos; j--)
-            {
-                virtualKey[j] = virtualKey[j-1];
-            }
-            virtualKey[newKeyPos] = x;  //set new key
+        //shift keys above new key up
+        for(int j = MAX+1;j > newKeyPos; j--){
+            virtualKey[j] = virtualKey[j-1];
+        }
+        virtualKey[newKeyPos] = x;  //set new key
 
-            //shift pointers above new pointer up
-            for(int j = MAX+2;j > newKeyPos+1; j--)
-            {
-                virtualPtr[j] = virtualPtr[j-1];
-            }
+        //shift pointers above new pointer up
+        for(int j = MAX+2;j > newKeyPos+1; j--){
+            virtualPtr[j] = virtualPtr[j-1];
+        }
 
-            virtualPtr[newKeyPos+1] = child;  //set new pointer
+        virtualPtr[newKeyPos+1] = child;  //set new pointer
 
 
-            // split cursor to cursor and newInternal with half of original size
-            cursor->size = (MAX+1)/2;
-            newInternal->size = MAX-(MAX+1)/2;
+        // split cursor to cursor and newInternal with half of original size
+        cursor->size = (MAX+1)/2;
+        newInternal->size = MAX-(MAX+1)/2;
 
-            // set keys and pointers of new node
-            int i;
-            for(i = 0, j = cursor->size+1; i < newInternal->size; i++, j++)
-            {
-                newInternal->key[i] = virtualKey[j];
-            }
-            for(i = 0, j = cursor->size+1; i < newInternal->size+1; i++, j++)
-            {
-                newInternal->ptr[i] = virtualPtr[j];
-            }
-            // the note we are splitting is a root node
-            if(root == cursor)
-            {
-                //creation of new node when splitting root node
-                Node* newRoot = new Node;
-                newRoot->key[0] = cursor->key[cursor->size];
-                newRoot->ptr[0] = cursor;
-                newRoot->ptr[1] = newInternal;
-                newRoot->IS_LEAF = false;
-                newRoot->size = 1;
-                root = newRoot;
-                //cout<<"Created new root\n";
-            }
-            else
-            {   // recursive DFS to find parent node
-                insertInternal(cursor->key[cursor->size] ,findParent(root,cursor) ,newInternal);
-            }
+        // set keys and pointers of new node
+        int i;
+        for(i = 0, j = cursor->size+1; i < newInternal->size; i++, j++){
+            newInternal->key[i] = virtualKey[j];
+        }
+        for(i = 0, j = cursor->size+1; i < newInternal->size+1; i++, j++){
+            newInternal->ptr[i] = virtualPtr[j];
+        }
+        // the note we are splitting is a root node
+        if(root == cursor){
+            //creation of new node when splitting root node
+            Node* newRoot = new Node;
+            newRoot->key[0] = cursor->key[cursor->size];
+            newRoot->ptr[0] = cursor;
+            newRoot->ptr[1] = newInternal;
+            newRoot->IS_LEAF = false;
+            newRoot->size = 1;
+            root = newRoot;
+            //cout<<"Created new root\n";
+        }
+        else{   // recursive DFS to find parent node
+            insertInternal(cursor->key[cursor->size] ,findParent(root,cursor) ,newInternal);
         }
     }
+}
 
-void BPTree::removeInternal(keys_struct x, Node* cursor, Node* child)
-{
+void BPTree::removeInternal(keys_struct x, Node* cursor, Node* child){
     //deleting the key x first
     // if deleting root node key
-    if(cursor == root)
-    {
-        if(cursor->size == 1)// if root empty after removal, child becomes new root
-        {
+    if(cursor == root){
+        // if root empty after removal, child becomes new root
+        if(cursor->size == 1){
             // check if larger or smaller pointer points to child
             // other pointer that do not point to child becomes new root
             int newRoot;
             // check if 1 of 2 nodes points to child
             if(cursor->ptr[0] == child || cursor->ptr[1] == child ){
                 // check if larger pointer points to child
-                if(cursor->ptr[1] == child)
-                {
+                if(cursor->ptr[1] == child){
                     // set new root to other child
                     newRoot = 0;
                 }
-                else
-                {
+                else{
                     // set new root to other child
                     newRoot = 1;
                 }
@@ -190,38 +174,31 @@ void BPTree::removeInternal(keys_struct x, Node* cursor, Node* child)
     // when reach here, parent is not root node with 1 key
     int pos;
     // search for position of key to be deleted
-    for(pos = 0; pos < cursor->size; pos++)
-    {
+    for(pos = 0; pos < cursor->size; pos++){
         // position acquired
-        if(cursor->key[pos].key_value == x.key_value)
-        {
+        if(cursor->key[pos].key_value == x.key_value){
             break;
         }
     }
     // shift each key from pos above back, removing the key
-    for(int i = pos; i < cursor->size; i++)
-    {
+    for(int i = pos; i < cursor->size; i++){
         cursor->key[i] = cursor->key[i+1];
     }
     // search for position of pointer to be deleted
-    for(pos = 0; pos < cursor->size+1; pos++)
-    {
+    for(pos = 0; pos < cursor->size+1; pos++){
         // position acquired
-        if(cursor->ptr[pos] == child)
-        {
+        if(cursor->ptr[pos] == child){
             break;
         }
     }
     // shift each pointer from pos above back, removing the pointer
-    for(int i = pos; i < cursor->size+1; i++)
-    {
+    for(int i = pos; i < cursor->size+1; i++){
         cursor->ptr[i] = cursor->ptr[i+1];
     }
     // update new size
     cursor->size--;
     // check if size satisfy minimum size
-    if(cursor->size >= (MAX+1)/2-1)
-    {
+    if(cursor->size >= (MAX+1)/2-1){
         cout<<"Deleted "<< x.key_value << " " <<" from internal node successfully\n";
         return;
     }
@@ -229,8 +206,7 @@ void BPTree::removeInternal(keys_struct x, Node* cursor, Node* child)
     // when reach here, size is too small(underflow)
 
     // ignore minimum size if node is root
-    if(cursor==root)
-    {
+    if(cursor==root){
         return;
     }
     // strategy: try to get keys from sibling nodes
@@ -238,10 +214,8 @@ void BPTree::removeInternal(keys_struct x, Node* cursor, Node* child)
     Node* parent = findParent(root, cursor);
     int leftSibling, rightSibling;
     // get position of node in parent
-    for(pos = 0; pos < parent->size+1; pos++)
-    {
-        if(parent->ptr[pos] == cursor)
-        {
+    for(pos = 0; pos < parent->size+1; pos++){
+        if(parent->ptr[pos] == cursor){
             // locate the nearest siblings
             leftSibling = pos - 1;
             rightSibling = pos + 1;
@@ -250,17 +224,14 @@ void BPTree::removeInternal(keys_struct x, Node* cursor, Node* child)
     }
     // get keys from siblings
     // check existence of left sibling
-    if(leftSibling >= 0)
-    {
+    if(leftSibling >= 0){
         // get left sibling
         Node *leftNode = parent->ptr[leftSibling];
         // check if left sibling can afford to transfer (hit minimum size)
-        if(leftNode->size >= (MAX+1)/2)
-        {
+        if(leftNode->size >= (MAX+1)/2){
 
             // make key space for incoming transfer
-            for(int i = cursor->size; i > 0; i--)
-            {
+            for(int i = cursor->size; i > 0; i--){
                 // shift keys to the right since incoming key is smallest
                 cursor->key[i] = cursor->key[i-1];
             }
@@ -269,8 +240,7 @@ void BPTree::removeInternal(keys_struct x, Node* cursor, Node* child)
             parent->key[leftSibling] = leftNode->key[leftNode->size-1];
 
             //make pointer space for incoming transfer
-            for (int i = cursor->size+1; i > 0; i--)
-            {
+            for (int i = cursor->size+1; i > 0; i--){
                 // shift pointers to the right since incoming pointer is smallest
                 cursor->ptr[i] = cursor->ptr[i-1];
             }
@@ -284,28 +254,24 @@ void BPTree::removeInternal(keys_struct x, Node* cursor, Node* child)
         }
     }
     // check existence of right sibling
-    if(rightSibling <= parent->size)
-    {
+    if(rightSibling <= parent->size){
         // get right sibling
         Node *rightNode = parent->ptr[rightSibling];
         // check if right sibling can afford to transfer (hit minimum size)
-        if(rightNode->size >= (MAX+1)/2)
-        {
+        if(rightNode->size >= (MAX+1)/2){
             // do not need to make space since transferred key/pointer is largest in cursor
             // move left most key of right sibling to cursor right most key
             cursor->key[cursor->size] = parent->key[pos];
             // update parent key for right sibling
             parent->key[pos] = rightNode->key[0];
             // update right sibling keys by shifting left
-            for (int i = 0; i < rightNode->size -1; i++)
-            {
+            for (int i = 0; i < rightNode->size -1; i++){
                 rightNode->key[i] = rightNode->key[i+1];
             }
             // move right most pointer of left sibling to cursor left most pointer
             cursor->ptr[cursor->size+1] = rightNode->ptr[0];
             // update right sibling pointers by shifting left
-            for (int i = 0; i < rightNode->size; ++i)
-            {
+            for (int i = 0; i < rightNode->size; ++i){
                 rightNode->ptr[i] = rightNode->ptr[i+1];
             }
             //update new node sizes
@@ -318,8 +284,7 @@ void BPTree::removeInternal(keys_struct x, Node* cursor, Node* child)
     // if we reach here, it means that transferal from sibling nodes was not possible
     // hence we do merging
     // check existence of left sibling
-    if(leftSibling >= 0)
-    {
+    if(leftSibling >= 0){
         // merged node = left sibling + parent key + cursor
         // get left sibling
         Node *leftNode = parent->ptr[leftSibling];
@@ -327,13 +292,11 @@ void BPTree::removeInternal(keys_struct x, Node* cursor, Node* child)
         // left sibling = left sibling + parent key
         leftNode->key[leftNode->size] = parent->key[leftSibling];
         // add each cursor key into left sibling
-        for(int i = leftNode->size+1, j = 0; j < cursor->size; j++)
-        {
+        for(int i = leftNode->size+1, j = 0; j < cursor->size; j++){
             leftNode->key[i] = cursor->key[j];
         }
         // add each cursor pointer into left sibling
-        for(int i = leftNode->size+1, j = 0; j < cursor->size+1; j++)
-        {
+        for(int i = leftNode->size+1, j = 0; j < cursor->size+1; j++){
             leftNode->ptr[i] = cursor->ptr[j];
             cursor->ptr[j] = NULL;
         }
@@ -346,23 +309,20 @@ void BPTree::removeInternal(keys_struct x, Node* cursor, Node* child)
         //cout<<"Merged with left sibling\n";
 
     }
-    // since can't merge with left, merge right
-    // check existence of right sibling
-    else if(rightSibling <= parent->size)
-    {
+        // since can't merge with left, merge right
+        // check existence of right sibling
+    else if(rightSibling <= parent->size){
         //merged node = cursor + parent key + right sibling
         Node *rightNode = parent->ptr[rightSibling];
         // cursor becomes the merged node
         // cursor = cursor + parent key
         cursor->key[cursor->size] = parent->key[rightSibling-1];
         // add each right sibling key into cursor
-        for(int i = cursor->size+1, j = 0; j < rightNode->size; j++)
-        {
+        for(int i = cursor->size+1, j = 0; j < rightNode->size; j++){
             cursor->key[i] = rightNode->key[j];
         }
         // add each right sibling pointer into cursor
-        for(int i = cursor->size+1, j = 0; j < rightNode->size+1; j++)
-        {
+        for(int i = cursor->size+1, j = 0; j < rightNode->size+1; j++){
             cursor->ptr[i] = rightNode->ptr[j];
             rightNode->ptr[j] = NULL;
         }
@@ -376,30 +336,25 @@ void BPTree::removeInternal(keys_struct x, Node* cursor, Node* child)
     }
 }
 
-Node* BPTree::findParent(Node* cursor, Node* child)
-{
+Node* BPTree::findParent(Node* cursor, Node* child){
     // find parent of child node within cursor use DFS
     // returns NULL if child has no parent in cursor
     Node* parent;
     // skip search if cursor is on last/second last level
     // cursor cannot be a parent if it is leaf node
     // cursor cannot be second last level since function is not called when child node is leaf node during insertion
-    if(cursor->IS_LEAF || (cursor->ptr[0])->IS_LEAF)
-    {
+    if(cursor->IS_LEAF || (cursor->ptr[0])->IS_LEAF){
         return NULL;
     }
     // go through each pointer of cursor
-    for(int i = 0; i < cursor->size+1; i++)
-    {
+    for(int i = 0; i < cursor->size+1; i++){
         // if pointer points to child, cursor is the parent
-        if(cursor->ptr[i] == child)
-        {
+        if(cursor->ptr[i] == child){
             parent = cursor;
             return parent;
         }
-        // else try to find parent among children of cursor
-        else
-        {
+            // else try to find parent among children of cursor
+        else{
             parent = findParent(cursor->ptr[i],child);
             if(parent!=NULL)return parent;
         }
@@ -408,7 +363,7 @@ Node* BPTree::findParent(Node* cursor, Node* child)
 }
 
 BPTree::BPTree()
-: root{NULL}
+        : root{NULL}
 {
 }
 
@@ -420,18 +375,14 @@ Node* BPTree::search(float x, bool flag, bool printer)
 //        //empty
 //        //cout<<"Tree empty\n";
 //    }
-    if (root != NULL)
-    {
+    if (root != NULL){
         Node* cursor = root;
         //in the following while loop, cursor will travel to the leaf node possibly consisting the key
-        while(cursor->IS_LEAF == false)
-        {
+        while(cursor->IS_LEAF == false){
             // traverse each key in cursor
-            for(int i = 0; i < cursor->size; i++)
-            {
+            for(int i = 0; i < cursor->size; i++){
                 // if key value larger than target, left pointer contains key if key is in cursor
-                if(x < cursor->key[i].key_value)
-                {
+                if(x < cursor->key[i].key_value){
                     // print each cursor key
                     if (printer == true) {
                         for (int j = 0; j < cursor->size; j++) {
@@ -444,8 +395,7 @@ Node* BPTree::search(float x, bool flag, bool printer)
                     break;
                 }
                 // if traversed till end of cursor, target must be in right most pointer
-                if(i == cursor->size - 1)
-                {
+                if(i == cursor->size - 1){
 
                     if (printer == true) {
                         for (int j = 0; j < cursor->size; j++) {
@@ -466,12 +416,10 @@ Node* BPTree::search(float x, bool flag, bool printer)
             }
             cout << "\n";
         }
-        // linear search leaf keys for targer
-        for(int i = 0; i < cursor->size; i++)
-        {
+        // linear search leaf keys for target
+        for(int i = 0; i < cursor->size; i++){
             // target found
-            if(cursor->key[i].key_value == x)
-            {
+            if(cursor->key[i].key_value == x){
                 //cout<<"Found\n";
                 if (flag == true) {
                     cout <<"Size: "<< cursor->key[i].add_vect.size() << "\n";
@@ -488,7 +436,7 @@ Node* BPTree::search(float x, bool flag, bool printer)
                 return cursor;
             }
         }
-        // if reach here, targer is not found
+        // if reach here, target is not found
         //cout<<"Not found\n";
         return nullptr;
     }
@@ -497,11 +445,11 @@ Node* BPTree::search(float x, bool flag, bool printer)
 // recursively traverse tree to find height
 int BPTree::height(Node* cursor){
     if(cursor->IS_LEAF==false){
-        // for each node traversed before leave, height + 1
+        // for each node traversed before leaf, height + 1
         return height(cursor->ptr[0])+1;
     }
     else if(cursor->IS_LEAF==true){
-        // reached leave
+        // reached leaf
         return 1;
     }
     else{
