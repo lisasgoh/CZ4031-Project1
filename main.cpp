@@ -9,6 +9,7 @@ using namespace std;
 #include <unordered_map>
 #include <vector>
 
+// Import other header files from directory
 #include "b-plus-tree.h"
 #include "memory-pool.h"
 
