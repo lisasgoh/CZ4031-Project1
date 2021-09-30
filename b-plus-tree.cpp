@@ -457,341 +457,317 @@ int BPTree::height(Node* cursor){
     }
 }
 
-void BPTree::insert(keys_struct x)
-{
-    //insert logic
-    if(root==NULL)
-    {
-        root = new Node;
-        root->key[0] = x;
-        root->IS_LEAF = true;
-        root->size = 1;
-        //cout<<"Created root\nInserted "<<  x.key_value << " " << x.add_vect[0] <<" successfully\n";
-    }
-    else
-    {
-        Node* cursor = root;
-        Node* parent;
+void BPTree::insert(keys_struct x) {
+  // insert logic
+  if (root == NULL) {
+    root = new Node;
+    root->key[0] = x;
+    root->IS_LEAF = true;
+    root->size = 1;
+    // cout<<"Created root\nInserted "<<  x.key_value << " " << x.add_vect[0]
+    // <<" successfully\n";
+  } else {
+    Node *cursor = root;
+    Node *parent;
 
-        Node* searchRes;
-        searchRes = search(x.key_value, false, false);
-        if ( searchRes != nullptr){
-            for(int i = 0; i < searchRes->size; i++)
-            {
-                if(searchRes->key[i].key_value == x.key_value)
-                {
-                    searchRes->key[i].add_vect.push_back(x.add_vect[0]);
-                    break;
-                }
-            }
-            return;
+    Node *searchRes;
+    searchRes = search(x.key_value, false, false);
+    if (searchRes != nullptr) {
+      for (int i = 0; i < searchRes->size; i++) {
+        if (searchRes->key[i].key_value == x.key_value) {
+          searchRes->key[i].add_vect.push_back(x.add_vect[0]);
+          break;
         }
-        //in the following while loop, cursor will travel to the leaf node possibly consisting the key
-        while(cursor->IS_LEAF == false)
-        {
-            parent = cursor;
-            for(int i = 0; i < cursor->size; i++)
-            {
-                if(x.key_value < cursor->key[i].key_value)
-                {
-                    cursor = cursor->ptr[i];
-                    break;
-                }
-                if(i == cursor->size - 1)
-                {
-                    cursor = cursor->ptr[i+1];
-                    break;
-                }
-            }
-        }
-        //now cursor is the leaf node in which we'll insert the new key
-        if(cursor->size < MAX)
-        {
-            //if cursor is not full
-            //find the correct position for new key
-            int i = 0;
-            while(x.key_value > cursor->key[i].key_value && i < cursor->size) i++;
-            //make space for new key
-            for(int j = cursor->size;j > i; j--)
-            {
-                cursor->key[j] = cursor->key[j-1];
-            }
-            cursor->key[i] = x;
-            cursor->size++;
-            cursor->ptr[cursor->size] = cursor->ptr[cursor->size-1];
-            cursor->ptr[cursor->size-1] = NULL;
-            //cout<<"Inserted "<< x.key_value << " " << x.add_vect[0] <<" successfully\n";
-        }
-        else
-        {
-            //cout<<"Inserted "<< x.key_value << " " << x.add_vect[0] <<" successfully\n";
-            //cout<<"Overflow in leaf node!\nSplitting leaf node\n";
-            //overflow condition
-            //create new leaf node
-            Node* newLeaf = new Node;
-            //create a virtual node and insert x into it
-            keys_struct virtualNode[MAX+1];
-            for(int i = 0; i < MAX; i++)
-            {
-                virtualNode[i] = cursor->key[i];
-            }
-            int i = 0, j;
-            while(x.key_value > virtualNode[i].key_value && i < MAX) i++;
-            //make space for new key
-            for(int j = MAX+1;j > i; j--)
-            {
-                virtualNode[j] = virtualNode[j-1];
-            }
-            virtualNode[i] = x;
-            newLeaf->IS_LEAF = true;
-            //split the cursor into two leaf nodes
-            cursor->size = (MAX+1)/2;
-            newLeaf->size = MAX+1-(MAX+1)/2;
-            //make cursor point to new leaf node
-            cursor->ptr[cursor->size] = newLeaf;
-            //make new leaf node point to the next leaf node
-            newLeaf->ptr[newLeaf->size] = cursor->ptr[MAX];
-            cursor->ptr[MAX] = NULL;
-            //now give elements to new leaf nodes
-            for(i = 0; i < cursor->size; i++)
-            {
-                cursor->key[i] = virtualNode[i];
-            }
-            for(i = 0, j = cursor->size; i < newLeaf->size; i++, j++)
-            {
-                newLeaf->key[i] = virtualNode[j];
-            }
-            //modify the parent
-            if(cursor == root)
-            {
-                //if cursor is a root node, we create a new root
-                Node* newRoot = new Node;
-                newRoot->key[0] = newLeaf->key[0];
-                newRoot->ptr[0] = cursor;
-                newRoot->ptr[1] = newLeaf;
-                newRoot->IS_LEAF = false;
-                newRoot->size = 1;
-                root = newRoot;
-                //cout<<"Created new root\n";
-            }
-            else
-            {
-                //insert new key in parent node
-                insertInternal(newLeaf->key[0],parent,newLeaf);
-            }
-        }
+      }
+      return;
     }
-}
-    
-void BPTree::remove(keys_struct x)
-{
-    //delete logic
-    if(root==NULL)
-    {
-        //cout<<"Tree empty\n";
+    // in the following while loop, cursor will travel to the leaf node possibly
+    // consisting the key
+    while (cursor->IS_LEAF == false) {
+      parent = cursor;
+      for (int i = 0; i < cursor->size; i++) {
+        if (x.key_value < cursor->key[i].key_value) {
+          cursor = cursor->ptr[i];
+          break;
+        }
+        if (i == cursor->size - 1) {
+          cursor = cursor->ptr[i + 1];
+          break;
+        }
+      }
     }
-    else
-    {
-        Node* cursor = root;
-        Node* parent;
-        int leftSibling, rightSibling;
-        //in the following while loop, cursor will will travel to the leaf node possibly consisting the key
-        while(cursor->IS_LEAF == false)
-        {
-            for(int i = 0; i < cursor->size; i++)
-            {
-                parent = cursor;
-                leftSibling = i-1; //leftSibling is the index of left sibling in the parent node
-                rightSibling =  i+1; //rightSibling is the index of right sibling in the parent node
-                if(x.key_value < cursor->key[i].key_value)
-                {
-                    cursor = cursor->ptr[i];
-                    break;
-                }
-                if(i == cursor->size - 1)
-                {
-                    leftSibling = i;
-                    rightSibling = i+2;
-                    cursor = cursor->ptr[i+1];
-                    break;
-                }
-            }
-        }
-        //in the following for loop, we search for the key if it exists
-        bool found = false;
-        int pos;
-        for(pos = 0; pos < cursor->size; pos++)
-        {
-            if(cursor->key[pos].key_value == x.key_value)
-            {
-                found = true;
-                break;
-            }
-        }
-        if(!found)//if key does not exist in that leaf node
-        {
-            //cout<<"Not found\n";
-            return;
-        }
-        //deleting the key
-        for(int i = pos; i < cursor->size; i++)
-        {
-            cursor->key[i] = cursor->key[i+1];
-        }
-        cursor->size--;
-        if(cursor == root)//if it is root node, then make all pointers NULL
-        {
-            cout<<"Deleted "<<x.key_value << " " <<  "from leaf node successfully\n";
-            for(int i = 0; i < MAX+1; i++)
-            {
-                cursor->ptr[i] = NULL;
-            }
-            if(cursor->size == 0)//if all keys are deleted
-            {
-                //cout<<"Tree died\n";
-                delete[] cursor->key;
-                delete[] cursor->ptr;
-                delete cursor;
-                cout << "Deleted 1" <<"\n";
-                root = NULL;
-            }
-            return;
-        }
-        cursor->ptr[cursor->size] = cursor->ptr[cursor->size+1];
-        cursor->ptr[cursor->size+1] = NULL;
-        cout<<"Deleted "<<x.key_value << " " <<" from leaf node successfully\n";
-        if(cursor->size >= (MAX+1)/2)//no underflow
-        {
-            return;
-        }
-        //cout<<"Underflow in leaf node!\n";
-        //underflow condition
-        //first we try to transfer a key from sibling node
-        //check if left sibling exists
-        if(leftSibling >= 0)
-        {
-            Node *leftNode = parent->ptr[leftSibling];
-            //check if it is possible to transfer
-            if(leftNode->size >= (MAX+1)/2+1)
-            {
-                //make space for transfer
-                for(int i = cursor->size; i > 0; i--)
-                {
-                    cursor->key[i] = cursor->key[i-1];
-                }
-                //shift pointer to next leaf
-                cursor->size++;
-                cursor->ptr[cursor->size] = cursor->ptr[cursor->size-1];
-                cursor->ptr[cursor->size-1] = NULL;
-                //transfer
-                cursor->key[0] = leftNode->key[leftNode->size-1];
-                //shift pointer of leftsibling
-                leftNode->size--;
-                leftNode->ptr[leftNode->size] = cursor;
-                leftNode->ptr[leftNode->size+1] = NULL;
-                //update parent
-                parent->key[leftSibling] = cursor->key[0];
-                //cout<<"Transferred "<<cursor->key[0].key_value << " " << cursor->key[0].add_vect[0] <<" from left sibling of leaf node\n";
-                return;
-            }
-        }
-        if(rightSibling <= parent->size)//check if right sibling exist
-        {
-            Node *rightNode = parent->ptr[rightSibling];
-            //check if it is possible to transfer
-            if(rightNode->size >= (MAX+1)/2+1)
-            {
-                //shift pointer to next leaf
-                cursor->size++;
-                cursor->ptr[cursor->size] = cursor->ptr[cursor->size-1];
-                cursor->ptr[cursor->size-1] = NULL;
-                //transfer
-                cursor->key[cursor->size-1] = rightNode->key[0];
-                //shift pointer of rightsibling
-                rightNode->size--;
-                rightNode->ptr[rightNode->size] = rightNode->ptr[rightNode->size+1];
-                rightNode->ptr[rightNode->size+1] = NULL;
-                //shift conent of right sibling
-                for(int i = 0; i < rightNode->size; i++)
-                {
-                    rightNode->key[i] = rightNode->key[i+1];
-                }
-                //update parent
-                parent->key[rightSibling-1] = rightNode->key[0];
-                //cout<<"Transferred "<<cursor->key[cursor->size-1].key_value <<" "<< cursor->key[cursor->size-1].add_vect[0] <<" from right sibling of leaf node\n";
-                return;
-            }
-        }
-        //must merge and delete a node
-        if(leftSibling >= 0)//if left sibling exist
-        {
-            Node* leftNode = parent->ptr[leftSibling];
-            // transfer all keys to leftsibling and then transfer pointer to next leaf node
-            for(int i = leftNode->size, j = 0; j < cursor->size; i++, j++)
-            {
-                leftNode->key[i] = cursor->key[j];
-            }
-            leftNode->ptr[leftNode->size] = NULL;
-            leftNode->size += cursor->size;
-            leftNode->ptr[leftNode->size] = cursor->ptr[cursor->size];
-
-            //cout<<"Merging two leaf nodes\n";
-            removeInternal(parent->key[leftSibling],parent,cursor);// delete parent node key
-            delete[] cursor->key;
-            delete[] cursor->ptr;
-            delete cursor;
-            cout << "Deleted 1" <<"\n";
-        }
-        else if(rightSibling <= parent->size)//if right sibling exist
-        {
-            Node* rightNode = parent->ptr[rightSibling];
-            // transfer all keys to cursor and then transfer pointer to next leaf node
-            for(int i = cursor->size, j = 0; j < rightNode->size; i++, j++)
-            {
-                cursor->key[i] = rightNode->key[j];
-            }
-            cursor->ptr[cursor->size] = NULL;
-            cursor->size += rightNode->size;
-            cursor->ptr[cursor->size] = rightNode->ptr[rightNode->size];
-            //cout<<"Merging two leaf nodes\n";
-            removeInternal(parent->key[rightSibling-1],parent,rightNode);// delete parent node key
-            delete[] rightNode->key;
-            delete[] rightNode->ptr;
-            delete rightNode;
-            cout << "Deleted 1 \n";
-        }
+    // now cursor is the leaf node in which we'll insert the new key
+    if (cursor->size < MAX) {
+      // if cursor is not full
+      // find the correct position for new key
+      int i = 0;
+      while (x.key_value > cursor->key[i].key_value && i < cursor->size)
+        i++;
+      // make space for new key
+      for (int j = cursor->size; j > i; j--) {
+        cursor->key[j] = cursor->key[j - 1];
+      }
+      cursor->key[i] = x;
+      cursor->size++;
+      cursor->ptr[cursor->size] = cursor->ptr[cursor->size - 1];
+      cursor->ptr[cursor->size - 1] = NULL;
+      // cout<<"Inserted "<< x.key_value << " " << x.add_vect[0] <<"
+      // successfully\n";
+    } else {
+      // cout<<"Inserted "<< x.key_value << " " << x.add_vect[0] <<"
+      // successfully\n"; cout<<"Overflow in leaf node!\nSplitting leaf node\n";
+      // overflow condition
+      // create new leaf node
+      Node *newLeaf = new Node;
+      // create a virtual node and insert x into it
+      keys_struct virtualNode[MAX + 1];
+      for (int i = 0; i < MAX; i++) {
+        virtualNode[i] = cursor->key[i];
+      }
+      int i = 0, j;
+      while (x.key_value > virtualNode[i].key_value && i < MAX)
+        i++;
+      // make space for new key
+      for (int j = MAX + 1; j > i; j--) {
+        virtualNode[j] = virtualNode[j - 1];
+      }
+      virtualNode[i] = x;
+      newLeaf->IS_LEAF = true;
+      // split the cursor into two leaf nodes
+      cursor->size = (MAX + 1) / 2;
+      newLeaf->size = MAX + 1 - (MAX + 1) / 2;
+      // make cursor point to new leaf node
+      cursor->ptr[cursor->size] = newLeaf;
+      // make new leaf node point to the next leaf node
+      newLeaf->ptr[newLeaf->size] = cursor->ptr[MAX];
+      cursor->ptr[MAX] = NULL;
+      // now give elements to new leaf nodes
+      for (i = 0; i < cursor->size; i++) {
+        cursor->key[i] = virtualNode[i];
+      }
+      for (i = 0, j = cursor->size; i < newLeaf->size; i++, j++) {
+        newLeaf->key[i] = virtualNode[j];
+      }
+      // modify the parent
+      if (cursor == root) {
+        // if cursor is a root node, we create a new root
+        Node *newRoot = new Node;
+        newRoot->key[0] = newLeaf->key[0];
+        newRoot->ptr[0] = cursor;
+        newRoot->ptr[1] = newLeaf;
+        newRoot->IS_LEAF = false;
+        newRoot->size = 1;
+        root = newRoot;
+        // cout<<"Created new root\n";
+      } else {
+        // insert new key in parent node
+        insertInternal(newLeaf->key[0], parent, newLeaf);
+      }
     }
+  }
 }
 
-int BPTree::display(Node* cursor, int nodecount, bool first)
-{
-    if (first == true) {
-        for (int i = 0;i<cursor->size+1 ; i++){
-            if (i!=cursor->size) {
-                cout << 0 << " " << cursor->key[i].key_value << "\n";
-            }
-            cout << 1 << "\n";
-            //cout << cursor->ptr[i]->size << " Size \n";
-            for (int j = 0; j<cursor->ptr[i]->size; j++){
-                cout << cursor->ptr[i]->key[j].key_value << " ";
-            }
-            cout << "\n";
+void BPTree::remove(keys_struct x) {
+  // delete logic
+  if (root == NULL) {
+    // cout<<"Tree empty\n";
+  } else {
+    Node *cursor = root;
+    Node *parent;
+    int leftSibling, rightSibling;
+    // in the following while loop, cursor will will travel to the leaf node
+    // possibly consisting the key
+    while (cursor->IS_LEAF == false) {
+      for (int i = 0; i < cursor->size; i++) {
+        parent = cursor;
+        leftSibling =
+            i -
+            1; // leftSibling is the index of left sibling in the parent node
+        rightSibling =
+            i +
+            1; // rightSibling is the index of right sibling in the parent node
+        if (x.key_value < cursor->key[i].key_value) {
+          cursor = cursor->ptr[i];
+          break;
         }
-        return 0;
+        if (i == cursor->size - 1) {
+          leftSibling = i;
+          rightSibling = i + 2;
+          cursor = cursor->ptr[i + 1];
+          break;
+        }
+      }
     }
-    else {
+    // in the following for loop, we search for the key if it exists
+    bool found = false;
+    int pos;
+    for (pos = 0; pos < cursor->size; pos++) {
+      if (cursor->key[pos].key_value == x.key_value) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) // if key does not exist in that leaf node
+    {
+      // cout<<"Not found\n";
+      return;
+    }
+    // deleting the key
+    for (int i = pos; i < cursor->size; i++) {
+      cursor->key[i] = cursor->key[i + 1];
+    }
+    cursor->size--;
+    if (cursor == root) // if it is root node, then make all pointers NULL
+    {
+      cout << "Deleted " << x.key_value << " "
+           << "from leaf node successfully\n";
+      for (int i = 0; i < MAX + 1; i++) {
+        cursor->ptr[i] = NULL;
+      }
+      if (cursor->size == 0) // if all keys are deleted
+      {
+        // cout<<"Tree died\n";
+        delete[] cursor->key;
+        delete[] cursor->ptr;
+        delete cursor;
+        cout << "Deleted 1"
+             << "\n";
+        root = NULL;
+      }
+      return;
+    }
+    cursor->ptr[cursor->size] = cursor->ptr[cursor->size + 1];
+    cursor->ptr[cursor->size + 1] = NULL;
+    cout << "Deleted " << x.key_value << " "
+         << " from leaf node successfully\n";
+    if (cursor->size >= (MAX + 1) / 2) // no underflow
+    {
+      return;
+    }
+    // cout<<"Underflow in leaf node!\n";
+    // underflow condition
+    // first we try to transfer a key from sibling node
+    // check if left sibling exists
+    if (leftSibling >= 0) {
+      Node *leftNode = parent->ptr[leftSibling];
+      // check if it is possible to transfer
+      if (leftNode->size >= (MAX + 1) / 2 + 1) {
+        // make space for transfer
+        for (int i = cursor->size; i > 0; i--) {
+          cursor->key[i] = cursor->key[i - 1];
+        }
+        // shift pointer to next leaf
+        cursor->size++;
+        cursor->ptr[cursor->size] = cursor->ptr[cursor->size - 1];
+        cursor->ptr[cursor->size - 1] = NULL;
+        // transfer
+        cursor->key[0] = leftNode->key[leftNode->size - 1];
+        // shift pointer of leftsibling
+        leftNode->size--;
+        leftNode->ptr[leftNode->size] = cursor;
+        leftNode->ptr[leftNode->size + 1] = NULL;
+        // update parent
+        parent->key[leftSibling] = cursor->key[0];
+        // cout<<"Transferred "<<cursor->key[0].key_value << " " <<
+        // cursor->key[0].add_vect[0] <<" from left sibling of leaf node\n";
+        return;
+      }
+    }
+    if (rightSibling <= parent->size) // check if right sibling exist
+    {
+      Node *rightNode = parent->ptr[rightSibling];
+      // check if it is possible to transfer
+      if (rightNode->size >= (MAX + 1) / 2 + 1) {
+        // shift pointer to next leaf
+        cursor->size++;
+        cursor->ptr[cursor->size] = cursor->ptr[cursor->size - 1];
+        cursor->ptr[cursor->size - 1] = NULL;
+        // transfer
+        cursor->key[cursor->size - 1] = rightNode->key[0];
+        // shift pointer of rightsibling
+        rightNode->size--;
+        rightNode->ptr[rightNode->size] = rightNode->ptr[rightNode->size + 1];
+        rightNode->ptr[rightNode->size + 1] = NULL;
+        // shift conent of right sibling
+        for (int i = 0; i < rightNode->size; i++) {
+          rightNode->key[i] = rightNode->key[i + 1];
+        }
+        // update parent
+        parent->key[rightSibling - 1] = rightNode->key[0];
+        // cout<<"Transferred "<<cursor->key[cursor->size-1].key_value <<" "<<
+        // cursor->key[cursor->size-1].add_vect[0] <<" from right sibling of leaf
+        // node\n";
+        return;
+      }
+    }
+    // must merge and delete a node
+    if (leftSibling >= 0) // if left sibling exist
+    {
+      Node *leftNode = parent->ptr[leftSibling];
+      // transfer all keys to leftsibling and then transfer pointer to next leaf
+      // node
+      for (int i = leftNode->size, j = 0; j < cursor->size; i++, j++) {
+        leftNode->key[i] = cursor->key[j];
+      }
+      leftNode->ptr[leftNode->size] = NULL;
+      leftNode->size += cursor->size;
+      leftNode->ptr[leftNode->size] = cursor->ptr[cursor->size];
+
+      // cout<<"Merging two leaf nodes\n";
+      removeInternal(parent->key[leftSibling], parent,
+                     cursor); // delete parent node key
+      delete[] cursor->key;
+      delete[] cursor->ptr;
+      delete cursor;
+      cout << "Deleted 1"
+           << "\n";
+    } else if (rightSibling <= parent->size) // if right sibling exist
+    {
+      Node *rightNode = parent->ptr[rightSibling];
+      // transfer all keys to cursor and then transfer pointer to next leaf node
+      for (int i = cursor->size, j = 0; j < rightNode->size; i++, j++) {
+        cursor->key[i] = rightNode->key[j];
+      }
+      cursor->ptr[cursor->size] = NULL;
+      cursor->size += rightNode->size;
+      cursor->ptr[cursor->size] = rightNode->ptr[rightNode->size];
+      // cout<<"Merging two leaf nodes\n";
+      removeInternal(parent->key[rightSibling - 1], parent,
+                     rightNode); // delete parent node key
+      delete[] rightNode->key;
+      delete[] rightNode->ptr;
+      delete rightNode;
+      cout << "Deleted 1 \n";
+    }
+  }
+}
+
+int BPTree::display(Node *cursor, int nodecount, bool first) {
+  if (first == true) {
+    for (int i = 0; i < cursor->size + 1; i++) {
+      if (i != cursor->size) {
+        cout << 0 << " " << cursor->key[i].key_value << "\n";
+      }
+      cout << 1 << "\n";
+      // cout << cursor->ptr[i]->size << " Size \n";
+      for (int j = 0; j < cursor->ptr[i]->size; j++) {
+        cout << cursor->ptr[i]->key[j].key_value << " ";
+      }
+      cout << "\n";
+    }
+    return 0;
+  } else {
     int thisnode;
     if (cursor->IS_LEAF == false) {
-        for (int i = 0; i < cursor->size + 1; i++) {
-            thisnode = display(cursor->ptr[i], 0, false);
-            nodecount = nodecount + thisnode;
-            //cout<<"\n"<<nodecount<<"\n";
+      for (int i = 0; i < cursor->size + 1; i++) {
+        thisnode = display(cursor->ptr[i], 0, false);
+        nodecount = nodecount + thisnode;
+        // cout<<"\n"<<nodecount<<"\n";
 
-            //read(curr->child_ptr[i]);
-
-        }
-        nodecount++;
-        return nodecount;
+        // read(curr->child_ptr[i]);
+      }
+      nodecount++;
+      return nodecount;
     }
     if (cursor->IS_LEAF == true) {
 
