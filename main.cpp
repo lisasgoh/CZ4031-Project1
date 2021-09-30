@@ -20,10 +20,10 @@ void *startAddress = NULL;
 // Main program
 int main() {
     cout << "\n------------ Welcome to the Database Management System "
-            "------------\n"
-            "This is a simulation of the database management system, to "
-            "demonstrate storage and indexing of a database, designed by Group "
-            "8.\n"
+         "------------\n"
+         "This is a simulation of the database management system, to "
+         "demonstrate storage and indexing of a database, designed by Group "
+         "8.\n"
          << "\n";
 
     // Storage Implementation
@@ -75,10 +75,10 @@ int main() {
         cout << "Reading completed!\n"; // Storage implementation completed
 
         cout << "\n------------ Welcome to the Database Management System "
-                "------------\n"
-                "This is a simulation of the database management system, to "
-                "demonstrate storage and indexing of a database, designed by Group "
-                "8.\n"
+             "------------\n"
+             "This is a simulation of the database management system, to "
+             "demonstrate storage and indexing of a database, designed by Group "
+             "8.\n"
              << "\n";
 
         // Storage Implementation
@@ -119,7 +119,7 @@ int main() {
                 // dataset
                 line_stream >> record.averageRating >> record.numVotes;
                 tuple<void *, uint> data_record =
-                        memory_pool.writeRecord(sizeof(record));
+                    memory_pool.writeRecord(sizeof(record));
                 data.push_back(data_record);
 
                 // void * pointer to store the address of the blocks in the memory
@@ -163,7 +163,7 @@ int main() {
 
         // Insert records into B+ tree
         for (records_iterator = data.begin(); records_iterator != data.end();
-             ++records_iterator) {
+                ++records_iterator) {
 
             void *blockAddress = (uchar *) get<0>(*records_iterator);
             uint offset = get<1>(*records_iterator);
