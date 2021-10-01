@@ -17,243 +17,222 @@ typedef unsigned int uint;
 typedef unsigned char uchar;
 void *startAddress = NULL;
 
+void experiment_2(BPTree root, int count);
+void experiment_3(BPTree root, int numVotes);
+void experiment_4(BPTree root, int numVotes_1, int numVotes_2);
+void experiment_5(BPTree root, int numVotes, int count);
+
 // Main program
 int main() {
-  cout << "\n------------ Welcome to the Database Management System "
-          "------------\n"
-          "This is a simulation of the database management system, to "
-          "demonstrate storage and indexing of a database, designed by Group "
-          "8.\n"
-       << "\n";
+  
+     cout << "\n------------ Welcome to the Database Management System "
+               "------------\n"
+               "This is a simulation of the database management system, to\n"
+               "demonstrate storage and indexing of a database, designed by "
+               "Group "
+               "8.\n"
+          << "\n";
 
-  // Storage Implementation
-  cout << "Data reading in progress...\n";
+     // Storage Implementation
+     cout << "Data reading in progress...\n";
 
-  ifstream data_file("data/data_short.tsv");
+     ifstream data_file("data/data_short.tsv");
 
-  // Initialise memory pool
-  // MemoryPool::MemoryPool(uint poolSize, uint blockSize)
-  MemoryPool memory_pool{100000000, 100};
+     // Initialise memory pool
+     // MemoryPool::MemoryPool(uint poolSize, uint blockSize)
+     MemoryPool memory_pool{100000000, 100};
 
-  // Initialise variables for data storage operations
-  vector<tuple<void *, uint>> data;
-  bool start_of_file_flag = true;
-  string copied;
-  Record record;
-  string tempLine;
+     // Initialise variables for data storage operations
+     vector<tuple<void *, uint>> data;
+     bool start_of_file_flag = true;
+     string copied;
+     Record record;
+     string tempLine;
 
-  // Data reading process
-  if (data_file.is_open()) {
+     // Data reading process
+     if (data_file.is_open()) {
+          // Serialisation of the TSV file into bytes
+          // Iterate 'data_file' and store individual bytes of data into
+          // 'copied'
+          while (getline(data_file, copied)) {
+          if (start_of_file_flag) {
+               start_of_file_flag = false;
+               continue;
+          }
 
-    // Serialisation of the TSV file into bytes
-    // Iterate 'data_file' and store individual bytes of data into 'copied'
-    while (getline(data_file, copied)) {
-      if (start_of_file_flag) {
-        start_of_file_flag = false;
-        continue;
-      }
+          // Copy the data into the block of records - Copy bytes from
+          // 'copied' to 'record', untill we encounter tabspace
+          strcpy(record.tconst, copied.substr(0, copied.find('\t')).c_str());
 
-      // Copy the data into the block of records - Copy bytes from 'copied' to
-      // 'record', untill we encounter tabspace
-      strcpy(record.tconst, copied.substr(0, copied.find('\t')).c_str());
+          stringstream line_stream(copied);
+          getline(line_stream, tempLine, '\t');
 
-      stringstream line_stream(copied);
-      getline(line_stream, tempLine, '\t');
+          // Write the blocks of records into disk, with the attributes in
+          // the dataset
+          line_stream >> record.averageRating >> record.numVotes;
+          tuple<void *, uint> data_record =
+               memory_pool.writeRecord(sizeof(record));
+          data.push_back(data_record);
 
-      // Write the blocks of records into disk, with the attributes in the
-      // dataset
-      line_stream >> record.averageRating >> record.numVotes;
-      tuple<void *, uint> data_record = memory_pool.writeRecord(sizeof(record));
-      data.push_back(data_record);
+          // void * pointer to store the address of the blocks in the
+          // memory Cast pointer into uint or uchar pointer to perform
+          // pointer arithmetic
+          void *rcdAdr = (uchar *)get<0>(data_record) + get<1>(data_record);
+          memcpy(rcdAdr, &record, sizeof(record));
+          }
 
-      // void * pointer to store the address of the blocks in the memory
-      // Cast pointer into uint or uchar pointer to perform pointer arithmetic
-      void *rcdAdr = (uchar *)get<0>(data_record) + get<1>(data_record);
-      memcpy(rcdAdr, &record, sizeof(record));
-    }
+          cout << "Reading completed!\n"; // Storage implementation completed
 
-    cout << "Reading completed!\n"; // Storage implementation completed
+          // Print database staistics (Experiment 1)
+          cout << "\n---------------- Experiment 1: Database Statistics ----------------\n";
+          cout << "1. Size of Database: " << memory_pool.getPoolSize() << "\n";
+          cout << "2. Size of One block: " << memory_pool.getBlockSize() << "B\n";
+          cout << "3. Initial Number of Blocks: "
+               << memory_pool.getPoolSize() / memory_pool.getBlockSize() << "\n";
+          cout << "4. Number of Allocated Blocks: "
+               << memory_pool.getBlocksAssigned() << "\n";
+          cout << "5. Number of Available Blocks Left: "
+               << memory_pool.getBlocksAvailable() << "\n"
+               << '\n';
 
-    cout << "\n------------ Welcome to the Database Management System "
-            "------------\n"
-            "This is a simulation of the database management system, to "
-            "demonstrate storage and indexing of a database, designed by Group "
-            "8.\n"
-         << "\n";
+          data_file.close();
+     }
 
-    // Storage Implementation
-    cout << "Data reading in progress...\n";
+     // Indexing Implementation
 
-    ifstream data_file("data/data_short.tsv");
+     // key:value pair to hold pairs of memory addresses.
+     unordered_map<void *, void *> memory_block;
 
-    // Initialise memory pool
-    // MemoryPool::MemoryPool(uint poolSize, uint blockSize)
-    MemoryPool memory_pool{100000000, 100};
+     // vector of tuples of record addresses <block address, relative record
+     // address>
+     vector<tuple<void *, uint>>::iterator records_iterator;
 
-    // Initialise variables for data storage operations
-    vector<tuple<void *, uint>> data;
-    bool start_of_file_flag = true;
-    string copied;
-    Record record;
-    string tempLine;
+     // Initialise new B+ tree node and other variables for indexing
+     BPTree root_node;
+     int search_index;
+     int iterating_index = 0;
 
-    // Data reading process
-    if (data_file.is_open()) {
+     cout << "Inserting records into B+ tree in progress...\n";
 
-      // Serialisation of the TSV file into bytes
-      // Iterate 'data_file' and store individual bytes of data into 'copied'
-      while (getline(data_file, copied)) {
-        if (start_of_file_flag) {
-          start_of_file_flag = false;
-          continue;
-        }
+     // Insert records into B+ tree
+     for (records_iterator = data.begin(); records_iterator != data.end();
+          ++records_iterator) {
+          void *blockAddress = (uchar *)get<0>(*records_iterator);
+          uint offset = get<1>(*records_iterator);
 
-        // Copy the data into the block of records - Copy bytes from 'copied' to
-        // 'record', untill we encounter tabspace
-        strcpy(record.tconst, copied.substr(0, copied.find('\t')).c_str());
+          // Copy bytes from memory address to database
+          if (memory_block.find(blockAddress) == memory_block.end()) {
+          void *main_memory_block = operator new(memory_pool.getBlockSize());
+          memcpy(main_memory_block, blockAddress, memory_pool.getBlockSize());
+          memory_block[blockAddress] = main_memory_block;
+          }
 
-        stringstream line_stream(copied);
-        getline(line_stream, tempLine, '\t');
+          void *recordAddress = (uchar *)memory_block.at(blockAddress) + offset;
 
-        // Write the blocks of records into disk, with the attributes in the
-        // dataset
-        line_stream >> record.averageRating >> record.numVotes;
-        tuple<void *, uint> data_record =
-            memory_pool.writeRecord(sizeof(record));
-        data.push_back(data_record);
+          // Insert into B+ tree based on the numVotes attribute
+          float num = (*(Record *)recordAddress).numVotes;
 
-        // void * pointer to store the address of the blocks in the memory
-        // Cast pointer into uint or uchar pointer to perform pointer arithmetic
-        void *rcdAdr = (uchar *)get<0>(data_record) + get<1>(data_record);
-        memcpy(rcdAdr, &record, sizeof(record));
-      }
+          keys_struct key;
+          key.key_value = num;
+          key.add_vect.push_back((uchar *)memory_block.at(blockAddress) + offset);
+          root_node.insert(key);
 
-      cout << "Reading completed!\n"; // Storage implementation completed
+          iterating_index++;
+     }
 
-      // Print database staistics (Experiment 1)
-      cout << "\n---------------- Database Statistics ----------------\n";
-      cout << "1. Size of Database: " << memory_pool.getPoolSize() << "\n";
-      cout << "2. Size of One block: " << memory_pool.getBlockSize() << "B\n";
-      cout << "3. Initial Number of Blocks: "
-           << memory_pool.getPoolSize() / memory_pool.getBlockSize() << "\n";
-      cout << "4. Number of Allocated Blocks: "
-           << memory_pool.getBlocksAssigned() << "\n";
-      cout << "5. Number of Available Blocks Left: "
-           << memory_pool.getBlocksAvailable() << "\n"
-           << '\n';
+     cout << "Insertion into B+ tree completed!\n";
 
-      data_file.close();
-    }
+     int count = 3;
 
-    // Indexing Implementation
+     // Experiment 2
+     experiment_2(root_node, count);
 
-    // key:value pair to hold pairs of memory addresses.
-    unordered_map<void *, void *> memory_block;
+     // Experiment 3
+     experiment_3(root_node, 500);
 
-    // vector of tuples of record addresses <block address, relative record
-    // address>
-    vector<tuple<void *, uint>>::iterator records_iterator;
+     // Experiment 4
+     experiment_4(root_node, 30000, 40000);
 
-    // Initialise new B+ tree node and other variables for indexing
-    BPTree root_node;
-    int search_index;
-    int iterating_index = 0;
+     // Experiment 5
+     experiment_5(root_node, 1000, count);
 
-    cout << "Inserting records into B+ tree in progress...\n";
+     // // Error from this line onwards
+     // root_node.remove(key);
 
-    // Insert records into B+ tree
-    for (records_iterator = data.begin(); records_iterator != data.end();
-         ++records_iterator) {
+     // cout << root_node.display(root_node.getRoot(), count, true) << "\n";
 
-      void *blockAddress = (uchar *)get<0>(*records_iterator);
-      uint offset = get<1>(*records_iterator);
+     return 0;
+}
 
-      // Copy bytes from memory address to database
-      if (memory_block.find(blockAddress) == memory_block.end()) {
-        void *main_memory_block = operator new(memory_pool.getBlockSize());
-        memcpy(main_memory_block, blockAddress, memory_pool.getBlockSize());
-        memory_block[blockAddress] = main_memory_block;
-      }
+void experiment_2(BPTree root, int count){
+     // Get B+ tree details
+     cout << "\n-------------- Experiment 2: Information on B+ Tree --------------\n";
 
-      void *recordAddress = (uchar *)memory_block.at(blockAddress) + offset;
+     cout << "Parameter n of B+ Tree: 5"
+          << "\n";
+     cout << "Number of Nodes in B+ Tree: " << root.getNumNode() << "\n";
+     cout << "B+ Tree Height: " << root.height(root.getRoot()) << "\n";
 
-      // Insert into B+ tree based on the numVotes attribute
-      float num = (*(Record *)recordAddress).numVotes;
+     cout << "\nB+ Tree:\n";
+     cout << root.display(root.getRoot(), count, true) << "\n";
+     cout << "\n";
+}
 
-      keys_struct key;
-      key.key_value = num;
-      key.add_vect.push_back((uchar *)memory_block.at(blockAddress) + offset);
-      root_node.insert(key);
+void experiment_3(BPTree root, int numVotes){
+     cout << "------------- Experiment 3: Search where numVotes = " << numVotes << " -------------\n";
 
-      iterating_index++;
-    }
+     cout << "These are the index nodes with records which satisfy the condition"
+          << "\n";
+     root.search(numVotes, true, true);
 
-    cout << "Insertion into B+ tree completed!\n";
+     cout << "\nData Blocks: "
+          << "\n";
+     cout << "\nAverage Value for averageRatings: "
+          << "\n";
+}
 
-    // Get B+ tree details (Experiment 2)
-    int count = 0;
+void experiment_4(BPTree root, int numVotes_1, int numVotes_2){
+     cout << "\n-------- Experiment 4: Search where " << numVotes_1 << " <= numVotes <= " << numVotes_2 << " --------\n";
 
-    cout << "\n-------------- Information on B+ Tree --------------\n";
+     cout << "These are the index nodes with records which satisfy the condition"
+          << "\n";
+     // root_node.search(500, true, true);
 
-    cout << "Parameter n of B+ Tree: "
-         << "\n";
-    cout << "Number of Nodes in B+ Tree: " << count << "\n";
-    cout << "B+ Tree Height: " << root_node.height(root_node.getRoot()) << "\n";
+     cout << "\nData Blocks: "
+          << "\n";
+     cout << "\nAverage Value for averageRatings: "
+          << "\n";
+}
 
-    cout << "\nB+ Tree:\n";
-    cout << root_node.display(root_node.getRoot(), count, true) << "\n";
-    cout << "\n";
+void experiment_5(BPTree root, int numVotes, int count){
+     cout << "\n-------- Experiment 5: Delete Movies where numVotes = " << numVotes << " --------\n\n";
 
-    // Experiment 3
-    cout << "------------ Search where numVotes = 500 ------------\n";
+     // Search records based on condition
+     cout << "These are the index nodes with records which satisfy the condition\n";
+     root.search(numVotes, true, true);
+     cout << '\n';
 
-    cout << "Index Nodes: "
-         << "\n";
-    root_node.search(500, true, true);
+     cout << "Deleting records where numVotes = " << numVotes << " in progress...\n\n";
 
-    cout << "\nData Blocks: "
-         << "\n";
-    cout << "\nAverage Value for averageRatings: "
-         << "\n";
+     keys_struct key;
+     key.key_value = 115;
+     key.add_vect.push_back((uchar *)nullptr);
 
-    // Experiment 4
-    cout << "\n----- Search where 30,000 <= numVotes <= 40,000 -----\n";
+     int numNodeBeforeRemoval = root.getNumNode();
+     int numNodeMerged = root.remove(key);
+     int numNodeAfterRemoval = root.getNumNode();
+     int numNodeRemoved = numNodeBeforeRemoval - numNodeAfterRemoval;
 
-    cout << "Index Nodes: "
-         << "\n";
-    // root_node.search(500, true, true);
+     cout << "\nNumber of Nodes Deleted: " << numNodeRemoved << "\n";
+     cout << "Number of Nodes Merged: " << numNodeMerged << "\n";
 
-    cout << "\nData Blocks: "
-         << "\n";
-    cout << "\nAverage Value for averageRatings: "
-         << "\n";
+     cout << "\nNumber of Nodes in Updated B+ Tree: " << root.getNumNode()
+          << "\n";
+     cout << "Height of Updated B+ Tree: " << root.height(root.getRoot()) 
+          << "\n";
 
-    // Experiment 5
-    cout << "\n-------- Delete Movies where numVotes = 1000 --------\n";
-
-    root_node.search(1000, true, true);
-
-    cout << '\n';
-
-    keys_struct key;
-    key.key_value = 115;
-    key.add_vect.push_back((uchar *)nullptr);
-    root_node.remove(key);
-
-    cout << "\nNumber of Nodes Deleted: "
-         << "\n";
-    cout << "Number of Nodes in Updated B+ Tree: "
-         << "\n";
-    cout << "Height of Updated B+ Tree: "
-         << "\n";
-    cout << "\nB+ Tree:\n";
-    cout << root_node.display(root_node.getRoot(), count, true) << "\n";
-    cout << "\n";
-
-    // // Error from this line onwards
-    // root_node.remove(key);
-
-    // cout << root_node.display(root_node.getRoot(), count, true) << "\n";
-
-    return 0;
-  }
+     
+     cout << "\nB+ Tree:\n";
+     cout << root.display(root.getRoot(), count, true) << "\n";
+     cout << "\n";
+}
