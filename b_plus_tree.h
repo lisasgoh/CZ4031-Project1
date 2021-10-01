@@ -1,9 +1,13 @@
+#ifndef B_PLUS_TREE_H
+#define B_PLUS_TREE_H
+
 #include "memory-pool.h"
 #include <climits>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
+
 using namespace std;
 
 struct keys_struct {
@@ -13,7 +17,7 @@ struct keys_struct {
 
 class BPTree; // self explanatory classes
 class Node {
-  bool IS_LEAF;
+  bool isLeaf;
   keys_struct *key;
   int size;
   Node **ptr;
@@ -26,13 +30,15 @@ public:
 class BPTree {
   Node *root;
   void insertInternal(keys_struct x, Node *cursor, Node *child);
-  int removeInternal(keys_struct x, Node *cursor, Node *child);
+  int removeInternal(keys_struct x, Node *cursor, Node *child, Node *newNode);
   Node *findParent(Node *cursor, Node *child);
   int numNode = 0;
 
 public:
   BPTree();
-  Node *search(float x, bool flag, bool printer);
+  void searchSingle(float key);
+  void searchRange(float lowerKeyBound, float upperKeyBound);
+  Node * search2(float x, bool flag, bool printer);
   int height(Node *cursor);
   void insert(keys_struct x);
   int remove(keys_struct x);
@@ -40,6 +46,7 @@ public:
   Node *getRoot();
   int getMax();
   int getNumNode() { return numNode; }
+  void printTree(Node *cursor);
   //    void cleanUp(Node* cursor)
   //    {
   //        //clean up logic
@@ -68,3 +75,5 @@ public:
   //        cleanUp(root);
   //    }
 };
+
+#endif

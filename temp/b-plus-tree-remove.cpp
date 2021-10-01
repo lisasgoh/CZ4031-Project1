@@ -1,5 +1,7 @@
 #include "b_plus_tree.h"
 
+using namespace std;
+
 void BPTree::removeInternal(keys_struct x, Node* cursor, Node* child)
 {
     // If root node key is being deleted and root is empty after removal, child becomes new root.

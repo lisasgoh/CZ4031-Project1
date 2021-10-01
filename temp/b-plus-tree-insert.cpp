@@ -1,10 +1,10 @@
-#include "b-plus-tree.h";
-
-#include "types.h"
+#include "b_plus_tree.h"
 
 #include <vector>
 #include <cstring>
 #include <iostream>
+
+using namespace std;
 
 /**
  * @brief 
@@ -13,15 +13,15 @@
  * @param cursor 
  * @param child 
  */
-void BPTree::insertInternal(keys_struct x, Node* cursor, Node* child){
+void BPTree::insertInternal(keys_struct x, Node* cursor, Node* child)
+{
     // insert into current node if there is space in cursor
-    if(cursor->size < MAX){
+    if(cursor->size < MAX)
+    {
         // since cursor is not full, linear search for position of new key
         int i = 0; // position of new key
-        while x.key_value > cursor->key[i].key_value && i< cursor->size)
-        {
-            i++;
-        }
+        while (i < cursor->size && x.key_value > cursor->key[i].key_value) i++;
+
         //shift keys above new key up TODO refactor as a util?
         for(int j = cursor->size; j > i; j--)
         {
@@ -67,7 +67,7 @@ void BPTree::insertInternal(keys_struct x, Node* cursor, Node* child){
         int i = 0;  // position of new key
 
         // since cursor is not full, linear search for position of new key
-        while(x.key_value > tempKeys[i].key_value && i < MAX){
+        while(i < MAX && x.key_value > tempKeys[i].key_value){
             i++;
         }
 
@@ -95,7 +95,7 @@ void BPTree::insertInternal(keys_struct x, Node* cursor, Node* child){
         newInternal->size = MAX-(MAX+1)/2;
 
         // set keys and pointers of new node
-        for(i = 0, j = cursor->size+1; i < newInternal->size; i++, j++){
+        for (i = 0, j = cursor->size+1; i < newInternal->size; i++, j++){
             newInternal->key[i] = tempKeys[j];
             newInternal->ptr[i] = tempPointers[j];
         }
@@ -104,7 +104,7 @@ void BPTree::insertInternal(keys_struct x, Node* cursor, Node* child){
         //     newInternal->ptr[i] = tempPointers[j];
         // }
         // the note we are splitting is a root node
-        if(root == cursor)
+        if (root == cursor)
         {
             //creation of new node when splitting root node
             Node* newRoot = new Node;
@@ -131,6 +131,7 @@ void BPTree::insertInternal(keys_struct x, Node* cursor, Node* child){
  * @param newKey 
  */
 void BPTree::insert(keys_struct x, float newKey) {
+  cout << root << endl;
   // insert logic
   if (root == nullptr) 
   {
@@ -138,6 +139,7 @@ void BPTree::insert(keys_struct x, float newKey) {
     root->key[0] = x;
     root->isLeaf = true;
     root->size = 1;
+    numNode++
     return;
   } 
   else 
@@ -147,7 +149,9 @@ void BPTree::insert(keys_struct x, float newKey) {
 
     // While not leaf, the cursor will continue travelling down to the leaf node
     // possibly containing the key.
-    while (!cursor->isLeaf) {
+    while (!cursor->isLeaf) 
+    {
+        int i;
         if (x.key_value >= cursor->key[cursor->size -1].key_value)
         {
             i = cursor->size;
@@ -155,11 +159,11 @@ void BPTree::insert(keys_struct x, float newKey) {
         else
         {
              // // Iterate through the keys to find the relevant key/ptr
-            int i = 0;
-            while (x.key_value >= cursor->key[i++]);
-            parent = cursor;
-            cursor = cursor->ptr[i];
+            i = 0;
+            while (x.key_value >= cursor->key[i]) i++;
         }
+        parent = cursor;
+        cursor = cursor->ptr[i];
     }
     // Cursor is now the leaf node in which the new key will be inserted.
     // If there is space to insert the new key.
@@ -168,7 +172,7 @@ void BPTree::insert(keys_struct x, float newKey) {
 
       // Continue iterating while cursor has not reached the last key and the key to be inserted is larger
       // than the current key.
-      while (x.key_value > cursor->key[i].key_value && i < cursor->size) i++;
+      while (i < cursor->size && x.key_value > cursor->key[i].key_value) i++;
 
       if (cursor->key[i].key_value == x.key_value)
       {
@@ -195,6 +199,8 @@ void BPTree::insert(keys_struct x, float newKey) {
     } else {
       Node *newLeaf = new Node;
       newLeaf->isLeaf = true;
+
+      numNode++;
 
       // Create a temp node to accommodate all the keys and insert x into it
       keys_struct tempNode[MAX + 1];
@@ -260,6 +266,7 @@ void BPTree::insert(keys_struct x, float newKey) {
       {
         // if cursor is a root node, we create a new root.
         Node *newRoot = new Node;
+          numNode++;
 
         //Set the new root's key to be the left bound of the right child.
         newRoot->key[0] = newLeaf->key[0];

@@ -1,4 +1,4 @@
-#include "b-plus-tree.h";
+#include "b_plus_tree.h"
 
 void BPTree::search(float lowerBoundKey, float upperBoundKey) 
 {
