@@ -1,22 +1,10 @@
-//
-// Created by Abhishek Bhagwat on 13/10/20.
-//
-
-/**
- * This implementation of the memory pool is based on the idea of the fixed-size memory pool allocator.
- * A contiguous section of memory is reserved for the pool, which is further divided into blocks.
- * Records of data are stored in these blocks sequentially. Each memory block can be accessed by the address of the
- * first block, size of the block and number of blocks allocated. The algorithm below just keeps track of the block
- * operations and usage as they are frequently allocated and deallocated.
- */
-
-
 #include "memory-pool.h"
+
+#include <algorithm>
+#include <cstring>
 #include <iostream>
 #include <string>
 #include <vector>
-#include <algorithm>
-#include <cstring>
 
 typedef unsigned int uint;
 typedef unsigned char uchar;
@@ -24,116 +12,108 @@ typedef unsigned char uchar;
 using namespace std;
 
 /**
- * MemPool Constructor
- * @param memPoolSize Overall size of the MemPool
- * @param blkSize Size of each block to be allocated in the MemPool
+ * Constructor for MemoryPool
  */
-
-MemPool::MemPool(uint memPoolSize, uint blkSize) {
-    this->memPoolSize = memPoolSize;
-    this->blkSize = blkSize;
-    uchar* memPoolPtr = nullptr;
-    this->memPoolPtr = new uchar[memPoolSize]; // allocate memPoolSize uchars and store it in memPoolPtr and initialize it to NULL.
-    this->blkPtr = nullptr;
-    this->memPoolUsedBlks = 0;
-    this->memPoolUsedRecords = 0;
-    this->numAllocBlks = 0;
-    this->numAvailBlks = memPoolSize / blkSize;
-    this -> curBlkUsed = 0;
+MemoryPool::MemoryPool(uint poolSize, uint blockSize) {
+  this->poolSize = poolSize;
+  this->blockSize = blockSize;
+  this->poolPtr = new uchar[poolSize];
+  this->blockPtr = nullptr;
+  this->blockOffset = 0;
+  this->sizeOfAssignedBlocks = 0;
+  this->sizeOfAssignedRecords = 0;
+  this->numBlocksAssigned = 0;
+  this->numBlocksAvailable = poolSize / blockSize;
+  this->numRecordsAssigned = 0;
 }
 
 /**
- * to allocate a new block, we should increment the pool ptr by the number of blocks to be allocated
- * after allocation, we should increment the next free ptr to the address after the allocated memory blocks
- * @return status of allocation of the block
+ * Destructor for MemoryPool
  */
-bool MemPool::allocBlk() {
-
-    if (numAvailBlks > 0) {
-        blkPtr = memPoolPtr + (numAllocBlks * blkSize); // increment blkPtr by number of allocated blocks
-        memPoolUsedBlks+=blkSize;
-        numAvailBlks -= 1; // decrement the available number of blocks by 1
-        numAllocBlks += 1; // increment the number of allocated blocks by 1
-        curBlkUsed = 0;
-
-        return true;
-    }
-
-    else {
-        cout << "MEMORY FULL";
-        return false;
-    }
+MemoryPool::~MemoryPool() {
+  delete poolPtr;
+  poolPtr = nullptr;
 }
 
 /**
- * Edge conditions to write records
- * 1. If there are no free space in the blocks or no blocks have been allocated, create a new block
- * 2. if the record size is greater than the block size, then writing is not possible.
- * @param record record to be written onto the block
- * @return status of the write of the record
+ * Assigns a new block in the memory pool
+ * 1. If there are no available blocks in the pool, no assignment can be done
+ * 2. Advance blockPtr to the starting address of the current block
+ * 3. Update the total size of assigned blocks
+ * 4. Update the number of available and assigned blocks
  */
-tuple<void * , uint> MemPool::writeRecord(uint recordSize) {
-
-    if(blkSize < (curBlkUsed + recordSize) or numAllocBlks == 0){
-        if (!allocBlk())
-            throw "Unable to reserve space as no free space in blocks or no blocks can be allocated";
-    }
-
-    if (blkSize < recordSize) {
-        throw "Unable to reserve space as record size is greater than the block size";
-    }
-
-    // Create a tuple for the address where the record is written <block address, relative offset>
-    // The record can be accessed at the address (block address + relative offset)
-
-    // void * pointer stores the address of the block, but in order to perform pointer arithmetic, this further needs
-    // to be cast into uint or uchar pointer
-    tuple<void * , uint> recordAddress(blkPtr, curBlkUsed);
-
-    memPoolUsedRecords+=recordSize;
-    curBlkUsed+=recordSize; //test
-
-    return recordAddress;
+bool MemoryPool::assignBlock() {
+  if (numBlocksAvailable == 0) {
+    cout << "Failed to assign block. Memory is full" << endl;
+    return false;
+  }
+  blockPtr = poolPtr + (numBlocksAssigned * blockSize);
+  sizeOfAssignedBlocks += blockSize;
+  numBlocksAvailable -= 1;
+  numBlocksAssigned += 1;
+  blockOffset = 0;
+  return true;
 }
 
 /**
- * function to delete the record from the given address.
- * Edge Case : If the given address points to an empty block, then delete the block
- * @param blkAddress address of the block where the record resides
- * @param relativeOffset address of the record inside the block, relative to the block start address
- * @param recordSize size of the record to be deleted
- * @return status of deletion of the record
+ * Writes a record to the current block, pointed to by `blockPtr`, in the memory
+ * pool
+ * 1. If there're no assigned blocks, or the record cannot fit in the current
+ * block, assign a new block
+ * 2. If the block assignment fails, throw an error
+ * 3. If the record size > block size, throw an error, as we're using unspanned
+ * records here
+ * 4. Create the record to be written in the form with the block it sits in, and
+ * its offset
+ * 5. Update the total size of assigned records, total number of assigned
+ * records, and the current block's offset
  */
-bool MemPool::deleteRecord(uchar *blkAddress, uint relativeOffset, uint recordSize) {
-    try {
-        // to delete a record, we can change the values stored in that record to NULL
-        // traverse from the beginning of the record address to the end based on the size of the record
-        // fill the elements to the null character
-        memPoolUsedRecords-=recordSize;
-        fill(blkAddress+relativeOffset, blkAddress+relativeOffset+recordSize, '\0');
+tuple<void *, uint> MemoryPool::writeRecord(uint recordSize) {
+  if (numBlocksAssigned == 0 || blockSize < (blockOffset + recordSize)) {
+    if (!assignBlock())
+      throw "Failed to write record. No free space in blocks, or no blocks can "
+            "be allocated";
+  }
 
-        uchar cmpBlk [recordSize];
-        fill(cmpBlk, cmpBlk+recordSize, '\0');
+  if (recordSize > blockSize) {
+    throw "Failed to write record. Record size > block size";
+  }
 
-        if(equal(cmpBlk, cmpBlk+recordSize, blkAddress)){
-            memPoolUsedBlks-=blkSize;
-        }
-
-        return true;
-    }
-
-    catch(exception &e) {
-        cout << "Exception" <<e.what() << "\n";
-        cout << "Delete record or block failed" << "\n";
-        return false;
-    }
+  tuple<void *, uint> recordWritten(blockPtr, blockOffset);
+  sizeOfAssignedRecords += recordSize;
+  blockOffset += recordSize;
+  numRecordsAssigned += 1;
+  return recordWritten;
 }
 
 /**
- * Destructor
+ * Deletes an existing record from the memory pool
+ * 1. Write null values to the range [blockAddress + offset, blockAddress +
+ * offset + recordSize]
+ * 2. Update the total size of assigned records
+ * 3. If the record to be deleted is the first (and only) record in its block,
+ * we can free up the block
  */
-MemPool::~MemPool() {
-    // safe deletion of pointers involves using the delete operator and then initialising it to NULL, to allow for future reference
-    delete memPoolPtr;
-    memPoolPtr = nullptr;
+bool MemoryPool::deleteRecord(uchar *blockAddress, uint offset,
+                              const uint recordSize) {
+  try {
+    fill(blockAddress + offset, blockAddress + offset + recordSize, '\0');
+    sizeOfAssignedRecords -= recordSize;
+
+    if (offset == 0) {
+      sizeOfAssignedBlocks -= blockSize;
+      numBlocksAssigned -= 1;
+      numBlocksAvailable += 1;
+    }
+
+    numRecordsAssigned -= 1;
+    return true;
+  }
+
+  catch (exception &e) {
+    cout << e.what() << "\n";
+    cout << "Record or block deletion failed"
+         << "\n";
+    return false;
+  }
 }

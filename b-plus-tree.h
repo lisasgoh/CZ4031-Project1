@@ -12,42 +12,40 @@ struct keys_struct {
 };
 
 class BPTree; // self explanatory classes
-class Node 
-{
-private:
-  bool isLeaf;
-  // float *keys; // Array of keys
-  keys_struct *key; //Array of keys with the linkedlist thing
+class Node {
+  bool IS_LEAF;
+  keys_struct *key;
   int size;
   Node **ptr;
   friend class BPTree;
 
 public:
   Node();
-  Node(bool isLeaf) {this.isLeaf = isLeaf;};
-  // Node(bool isLeaf) {this.isLeaf = isLeaf;};
 };
 
 class BPTree {
   Node *root;
   void insertInternal(keys_struct x, Node *cursor, Node *child);
-  void removeInternal(keys_struct x, Node *cursor, Node *child);
+  int removeInternal(keys_struct x, Node *cursor, Node *child);
   Node *findParent(Node *cursor, Node *child);
+  int numNode = 0;
 
 public:
   BPTree();
-  Node *search(float lowerBoundKey, float upperBoundKey);
+  Node *search(float x, bool flag, bool printer);
   int height(Node *cursor);
   void insert(keys_struct x);
-  void remove(keys_struct x);
+  int remove(keys_struct x);
   int display(Node *cursor, int nodecount, bool first);
   Node *getRoot();
+  int getMax();
+  int getNumNode() { return numNode; }
   //    void cleanUp(Node* cursor)
   //    {
   //        //clean up logic
   //        if(cursor!=NULL)
   //        {
-  //            if(cursor->isLeaf != true)
+  //            if(cursor->IS_LEAF != true)
   //            {
   //                for(int i = 0; i < cursor->size+1; i++)
   //                {
