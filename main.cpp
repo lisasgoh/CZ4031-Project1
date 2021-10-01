@@ -16,6 +16,7 @@ using namespace std;
 typedef unsigned int uint;
 typedef unsigned char uchar;
 void *startAddress = NULL;
+uint blockSize = 20;
 
 // Main program
 int main() {
@@ -44,6 +45,7 @@ int main() {
 
   // Data reading process
   if (data_file.is_open()) {
+
     // Serialisation of the TSV file into bytes
     // Iterate 'data_file' and store individual bytes of data into 'copied'
     while (getline(data_file, copied)) {
@@ -52,8 +54,8 @@ int main() {
         continue;
       }
 
-      // Copy the data into the block of records - Copy bytes from
-      // 'copied' to 'record', untill we encounter tabspace
+      // Copy the data into the block of records - Copy bytes from 'copied' to
+      // 'record', untill we encounter tabspace
       strcpy(record.tconst, copied.substr(0, copied.find('\t')).c_str());
 
       stringstream line_stream(copied);
@@ -66,8 +68,7 @@ int main() {
       data.push_back(data_record);
 
       // void * pointer to store the address of the blocks in the memory
-      // Cast pointer into uint or uchar pointer to perform pointer
-      // arithmetic
+      // Cast pointer into uint or uchar pointer to perform pointer arithmetic
       void *rcdAdr = (uchar *)get<0>(data_record) + get<1>(data_record);
       memcpy(rcdAdr, &record, sizeof(record));
     }
@@ -77,8 +78,7 @@ int main() {
     cout << "\n------------ Welcome to the Database Management System "
             "------------\n"
             "This is a simulation of the database management system, to "
-            "demonstrate storage and indexing of a database, designed by "
-            "Group "
+            "demonstrate storage and indexing of a database, designed by Group "
             "8.\n"
          << "\n";
 
@@ -89,7 +89,7 @@ int main() {
 
     // Initialise memory pool
     // MemoryPool::MemoryPool(uint poolSize, uint blockSize)
-    MemoryPool memory_pool{100000000, 100};
+    MemoryPool memory_pool{100000000, blockSize};
 
     // Initialise variables for data storage operations
     vector<tuple<void *, uint>> data;
@@ -100,35 +100,36 @@ int main() {
 
     // Data reading process
     if (data_file.is_open()) {
-      // Serialisation of the TSV file into bytes
-      // Iterate 'data_file' and store individual bytes of data into
-      // 'copied'
-      while (getline(data_file, copied)) {
-        if (start_of_file_flag) {
-          start_of_file_flag = false;
-          continue;
+
+        // Serialisation of the TSV file into bytes
+        // Iterate 'data_file' and store individual bytes of data into 'copied'
+        while (getline(data_file, copied)) {
+            if (start_of_file_flag) {
+                start_of_file_flag = false;
+                continue;
+            }
+
+            // Copy the data into the block of records - Copy bytes from 'copied' to
+            // 'record', untill we encounter tabspace
+            strcpy(record.tconst, copied.substr(0, copied.find('\t')).c_str());
+
+            stringstream line_stream(copied);
+            getline(line_stream, tempLine, '\t');
+
+            // Write the blocks of records into disk, with the attributes in the
+            // dataset
+            line_stream >> record.averageRating >> record.numVotes;
+            tuple<void *, uint> data_record =
+                    memory_pool.writeRecord(sizeof(record));
+            data.push_back(data_record);
+
+            // void * pointer to store the address of the blocks in the memory
+            // Cast pointer into uint or uchar pointer to perform pointer arithmetic
+            // <0> is block pointer
+            // <1> is block offset
+            void *rcdAdr = (uchar *) get<0>(data_record) + get<1>(data_record);
+            memcpy(rcdAdr, &record, sizeof(record));
         }
-
-        // Copy the data into the block of records - Copy bytes from
-        // 'copied' to 'record', untill we encounter tabspace
-        strcpy(record.tconst, copied.substr(0, copied.find('\t')).c_str());
-
-        stringstream line_stream(copied);
-        getline(line_stream, tempLine, '\t');
-
-        // Write the blocks of records into disk, with the attributes in
-        // the dataset
-        line_stream >> record.averageRating >> record.numVotes;
-        tuple<void *, uint> data_record =
-            memory_pool.writeRecord(sizeof(record));
-        data.push_back(data_record);
-
-        // void * pointer to store the address of the blocks in the
-        // memory Cast pointer into uint or uchar pointer to perform
-        // pointer arithmetic
-        void *rcdAdr = (uchar *)get<0>(data_record) + get<1>(data_record);
-        memcpy(rcdAdr, &record, sizeof(record));
-      }
 
       cout << "Reading completed!\n"; // Storage implementation completed
 
@@ -144,13 +145,13 @@ int main() {
            << memory_pool.getBlocksAvailable() << "\n"
            << '\n';
 
-      data_file.close();
+        data_file.close();
     }
 
     // Indexing Implementation
 
     // key:value pair to hold pairs of memory addresses.
-    unordered_map<void *, void *> memory_block;
+//    unordered_map<void *, void *> memory_block;
 
     // vector of tuples of record addresses <block address, relative record
     // address>
@@ -166,27 +167,38 @@ int main() {
     // Insert records into B+ tree
     for (records_iterator = data.begin(); records_iterator != data.end();
          ++records_iterator) {
-      void *blockAddress = (uchar *)get<0>(*records_iterator);
-      uint offset = get<1>(*records_iterator);
 
-      // Copy bytes from memory address to database
-      if (memory_block.find(blockAddress) == memory_block.end()) {
-        void *main_memory_block = operator new(memory_pool.getBlockSize());
-        memcpy(main_memory_block, blockAddress, memory_pool.getBlockSize());
-        memory_block[blockAddress] = main_memory_block;
-      }
+        void *blockAddress = (uchar *) get<0>(*records_iterator);
+        uint offset = get<1>(*records_iterator);
 
-      void *recordAddress = (uchar *)memory_block.at(blockAddress) + offset;
 
-      // Insert into B+ tree based on the numVotes attribute
-      float num = (*(Record *)recordAddress).numVotes;
 
-      keys_struct key;
-      key.key_value = num;
-      key.add_vect.push_back((uchar *)memory_block.at(blockAddress) + offset);
-      root_node.insert(key);
+//        // Copy bytes from memory address to database
+//        if (memory_block.find(blockAddress) == memory_block.end()) {
+//            void *main_memory_block = operator new(memory_pool.getBlockSize());
+//            memcpy(main_memory_block, blockAddress, memory_pool.getBlockSize());
+//            memory_block[blockAddress] = main_memory_block;
+//        }
+        // get starting block address
+        if (startAddress == NULL){
+            startAddress = blockAddress;
+        }
 
-      iterating_index++;
+        void *recordAddress = (uchar *) blockAddress + offset;
+        cout << "block size" << i <<": " << memory_pool.getBlockSize() << endl;
+        cout << "block address" << i <<": " << blockAddress << endl;
+        cout << "record address" << i <<": " << recordAddress << endl;
+        i++;
+
+        // Insert into B+ tree based on the numVotes attribute
+        float num = (*(Record *) recordAddress).numVotes;
+
+        keys_struct key;
+        key.key_value = num;
+        key.add_vect.push_back((uchar *) blockAddress + offset);
+        root_node.insert(key);
+
+        iterating_index++;
     }
 
     cout << "Insertion into B+ tree completed!\n";
