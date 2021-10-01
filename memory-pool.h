@@ -107,6 +107,8 @@ public:
    * @return database size in MB
    */
   int getDatabaseSizeInMB() { return sizeOfAssignedRecords / pow(2, 20); }
+
+  uchar* getPoolPtr(){ return poolPtr; }
 };
 
 #endif // MEMORY_POOL_H
