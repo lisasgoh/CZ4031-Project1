@@ -1,7 +1,136 @@
 #include "b-plus-tree.h";
 
+#include "types.h"
 
-void BPTree::insert(keys_struct x) {
+#include <vector>
+#include <cstring>
+#include <iostream>
+
+/**
+ * @brief 
+ * 
+ * @param x The key of the new leaf node
+ * @param cursor 
+ * @param child 
+ */
+void BPTree::insertInternal(keys_struct x, Node* cursor, Node* child){
+    // insert into current node if there is space in cursor
+    if(cursor->size < MAX){
+        // since cursor is not full, linear search for position of new key
+        int i = 0; // position of new key
+        while x.key_value > cursor->key[i].key_value && i< cursor->size)
+        {
+            i++;
+        }
+        //shift keys above new key up TODO refactor as a util?
+        for(int j = cursor->size; j > i; j--)
+        {
+          cursor->key[j] = cursor->key[j-1];  //push each key above the position of inserted key up
+          cursor->ptr[j+1] = cursor->ptr[j];
+        }
+        //shift pointers above new pointer up
+        // for(int i = cursor->size+1; i > newKeyPos+1; i--)
+        // {
+        //     cursor->ptr[i] = cursor->ptr[i-1];
+        // }
+        cursor->key[i] = x;  // set new key
+        cursor->size++; //set new size
+        cursor->ptr[i+1] = child;   // set new pointer
+    }
+        // split internal node if overflow
+    else
+    {
+        // create another internal node when overflow
+        Node* newInternal = new Node;
+        numNode++;
+        newInternal->isLeaf = false;
+
+        // Create temporary node to with extra key and pointer to store keys and pointers.
+        keys_struct tempKeys[MAX+1];
+
+         //MAX refers to the number of keys, pointer = number of keys + 1
+        Node* tempPointers[MAX+2];
+
+        // Copy keys and nodes to the temporary node.
+        for (int i = 0; i < MAX; i++)
+        {
+            tempKeys[i] = cursor->key[i];
+            tempPointers[i] = cursor->ptr[i];
+        }
+        tempPointers[MAX] = cursor->ptr[MAX];
+
+        // for(int i = 0; i < MAX+1; i++)
+        // {
+        //     tempPointers[i] = cursor->ptr[i];
+        // }
+        int j;
+        int i = 0;  // position of new key
+
+        // since cursor is not full, linear search for position of new key
+        while(x.key_value > tempKeys[i].key_value && i < MAX){
+            i++;
+        }
+
+        //shift keys above new key up
+        for(j = MAX+1; j > i; j--){
+            tempKeys[j] = tempKeys[j-1];
+            tempPointers[j+1] = tempPointers[j];
+        }
+        // Insert new key.
+        tempKeys[i] = x; 
+
+        // Insert new pointer.
+        tempPointers[i+1] = child;
+
+        //shift pointers above new pointer up
+        // for(int j = MAX+2;j > i+1; j--){
+        //     tempPointers[j] = tempPointers[j-1];
+        // }
+
+        // tempPointers[i+1] = child;  //set new pointer
+
+
+        // split cursor to cursor and newInternal with half of original size
+        cursor->size = (MAX+1)/2;
+        newInternal->size = MAX-(MAX+1)/2;
+
+        // set keys and pointers of new node
+        for(i = 0, j = cursor->size+1; i < newInternal->size; i++, j++){
+            newInternal->key[i] = tempKeys[j];
+            newInternal->ptr[i] = tempPointers[j];
+        }
+        newInternal->ptr[newInternal->size] = tempPointers[j];
+        // for(i = 0, j = cursor->size+1; i < newInternal->size+1; i++, j++){
+        //     newInternal->ptr[i] = tempPointers[j];
+        // }
+        // the note we are splitting is a root node
+        if(root == cursor)
+        {
+            //creation of new node when splitting root node
+            Node* newRoot = new Node;
+            numNode ++;
+            newRoot->key[0] = cursor->key[cursor->size];
+            newRoot->ptr[0] = cursor;
+            newRoot->ptr[1] = newInternal;
+            newRoot->isLeaf = false;
+            newRoot->size = 1;
+            root = newRoot;
+            //cout<<"Created new root\n";
+        }
+        else
+        {   // recursive DFS to find parent node
+            insertInternal(cursor->key[cursor->size] ,findParent(root,cursor) ,newInternal);
+        }
+    }
+}
+
+/**
+ * @brief 
+ * 
+ * @param x 
+ * @param newKey 
+ */
+void BPTree::insert(keys_struct x, float newKey) {
   // insert logic
   if (root == nullptr) 
   {
@@ -9,10 +138,10 @@ void BPTree::insert(keys_struct x) {
     root->key[0] = x;
     root->isLeaf = true;
     root->size = 1;
-    // cout<<"Created root\nInserted "<<  x.key_value << " " << x.add_vect[0]
-    // <<" successfully\n";
-  } else {
-
+    return;
+  } 
+  else 
+  {
     Node *cursor = root;
     Node *parent;
 
@@ -85,14 +214,16 @@ void BPTree::insert(keys_struct x) {
         while (x.key_value > tempNode[i].key_value) i++;
 
         // Key is already present
-        if (cursor->key[i] == x.key_value) {
+        if (cursor->key[i] == x.key_value) 
+        {
           cursor->key[i].add_vect.push_back(x.add_vect[0]);
           return;
         }
 
         // Create space for new key in virtual node.
         //TODO: should be max???
-        for (int j = MAX + 1; j > i; j--) {
+        for (int j = MAX + 1; j > i; j--) 
+        {
           tempNode[j] = tempNode[j - 1];
         }
 
@@ -114,16 +245,19 @@ void BPTree::insert(keys_struct x) {
       cursor->ptr[MAX] = NULL;
 
       // Distribute elements to the two new leaf nodes.
-      for (i = 0; i < cursor->size; i++) {
+      for (i = 0; i < cursor->size; i++) 
+      {
         cursor->key[i] = tempNode[i];
       }
 
-      for (int j = 0; j < newLeaf->size; i++, j++) {
-          newLeaf->key[j] = tempNode[i];
+      for (int j = 0; j < newLeaf->size; i++, j++) 
+      {
+        newLeaf->key[j] = tempNode[i];
       }
 
       // Modify the parent node.
-      if (cursor == root) {
+      if (cursor == root) 
+      {
         // if cursor is a root node, we create a new root.
         Node *newRoot = new Node;
 
@@ -136,7 +270,9 @@ void BPTree::insert(keys_struct x) {
         newRoot->isLeaf = false;
         newRoot->size = 1;
         root = newRoot;
-      } else {
+      } 
+      else 
+      {
         // Insert new key in parent node.
         insertInternal(newLeaf->key[0], parent, newLeaf);
       }

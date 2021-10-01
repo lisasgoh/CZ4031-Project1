@@ -16,7 +16,8 @@ class Node
 {
 private:
   bool isLeaf;
-  keys_struct *key;
+  // float *keys; // Array of keys
+  keys_struct *key; //Array of keys with the linkedlist thing
   int size;
   Node **ptr;
   friend class BPTree;
@@ -35,7 +36,7 @@ class BPTree {
 
 public:
   BPTree();
-  Node *search(float x, bool flag, bool printer);
+  Node *search(float lowerBoundKey, float upperBoundKey);
   int height(Node *cursor);
   void insert(keys_struct x);
   void remove(keys_struct x);
