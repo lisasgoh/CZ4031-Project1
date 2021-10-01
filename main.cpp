@@ -20,10 +20,10 @@ void *startAddress = NULL;
 // Main program
 int main() {
     cout << "\n------------ Welcome to the Database Management System "
-            "------------\n"
-            "This is a simulation of the database management system, to "
-            "demonstrate storage and indexing of a database, designed by Group "
-            "8.\n"
+         "------------\n"
+         "This is a simulation of the database management system, to "
+         "demonstrate storage and indexing of a database, designed by Group "
+         "8.\n"
          << "\n";
 
     // Storage Implementation
@@ -76,11 +76,11 @@ int main() {
         cout << "Reading completed!\n";  // Storage implementation completed
 
         cout << "\n------------ Welcome to the Database Management System "
-                "------------\n"
-                "This is a simulation of the database management system, to "
-                "demonstrate storage and indexing of a database, designed by "
-                "Group "
-                "8.\n"
+             "------------\n"
+             "This is a simulation of the database management system, to "
+             "demonstrate storage and indexing of a database, designed by "
+             "Group "
+             "8.\n"
              << "\n";
 
         // Storage Implementation
@@ -171,14 +171,14 @@ int main() {
 
         // Insert records into B+ tree
         for (records_iterator = data.begin(); records_iterator != data.end();
-             ++records_iterator) {
+                ++records_iterator) {
             void *blockAddress = (uchar *)get<0>(*records_iterator);
             uint offset = get<1>(*records_iterator);
 
             // Copy bytes from memory address to database
             if (memory_block.find(blockAddress) == memory_block.end()) {
                 void *main_memory_block = operator new(
-                    memory_pool.getBlockSize());
+                                              memory_pool.getBlockSize());
                 memcpy(main_memory_block, blockAddress,
                        memory_pool.getBlockSize());
                 memory_block[blockAddress] = main_memory_block;
