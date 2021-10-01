@@ -168,7 +168,7 @@ void experiment_2(BPTree root, int count){
      // Get B+ tree details
      cout << "\n-------------- Experiment 2: Information on B+ Tree --------------\n";
 
-     cout << "Parameter n of B+ Tree: 5"
+     cout << "Parameter n of B+ Tree: " << root.getMax()
           << "\n";
      cout << "Number of Nodes in B+ Tree: " << root.getNumNode() << "\n";
      cout << "B+ Tree Height: " << root.height(root.getRoot()) << "\n";
