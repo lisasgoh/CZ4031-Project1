@@ -108,7 +108,7 @@ void BPTree::insertInternal(keys_struct x, Node *cursor, Node *child) {
   }
 }
 
-void BPTree::removeInternal(keys_struct x, Node *cursor, Node *child) {
+int BPTree::removeInternal(keys_struct x, Node *cursor, Node *child) {
   // deleting the key x first
   // if deleting root node key
   if (cursor == root) {
@@ -144,7 +144,7 @@ void BPTree::removeInternal(keys_struct x, Node *cursor, Node *child) {
         cout << "Deleted 1"
              << "\n";
         // cout<<"Changed root node\n";
-        return;
+        return 0;
       }
 
       //            if(cursor->ptr[1] == child)
@@ -207,14 +207,14 @@ void BPTree::removeInternal(keys_struct x, Node *cursor, Node *child) {
   if (cursor->size >= (MAX + 1) / 2 - 1) {
     cout << "Deleted " << x.key_value << " "
          << " from internal node successfully\n";
-    return;
+    return 0;
   }
   cout << "Underflow in internal node!\n";
   // when reach here, size is too small(underflow)
 
   // ignore minimum size if node is root
   if (cursor == root) {
-    return;
+    return 0;
   }
   // strategy: try to get keys from sibling nodes
   // locate parent to find siblings
@@ -258,7 +258,7 @@ void BPTree::removeInternal(keys_struct x, Node *cursor, Node *child) {
       leftNode->size--;
       cout << "Transferred " << cursor->key[0].key_value << " " << x.add_vect[0]
            << " from left sibling of internal node\n";
-      return;
+      return 0;
     }
   }
   // check existence of right sibling
@@ -287,7 +287,7 @@ void BPTree::removeInternal(keys_struct x, Node *cursor, Node *child) {
       rightNode->size--;
       cout << "Transferred " << cursor->key[0].key_value << " " << x.add_vect[0]
            << " from right sibling of internal node\n";
-      return;
+      return 0;
     }
   }
   // if we reach here, it means that transferal from sibling nodes was not
@@ -313,9 +313,9 @@ void BPTree::removeInternal(keys_struct x, Node *cursor, Node *child) {
     // update cursor size
     cursor->size = 0;
     // delete cursor
-    removeInternal(parent->key[leftSibling], parent, cursor);
+    int numNodeMerged = removeInternal(parent->key[leftSibling], parent, cursor);
     cout << "Merged with left sibling\n";
-
+    return 1 + numNodeMerged;
   }
   // since can't merge with left, merge right
   // check existence of right sibling
@@ -339,8 +339,9 @@ void BPTree::removeInternal(keys_struct x, Node *cursor, Node *child) {
     // update right sibling size
     rightNode->size = 0;
     // delete right sibling
-    removeInternal(parent->key[rightSibling - 1], parent, rightNode);
+    int numNodeMerged = removeInternal(parent->key[rightSibling - 1], parent, rightNode);
     cout << "Merged with right sibling\n";
+    return 1 + numNodeMerged;
   }
 }
 
@@ -593,7 +594,7 @@ void BPTree::insert(keys_struct x) {
   }
 }
 
-void BPTree::remove(keys_struct x) {
+int BPTree::remove(keys_struct x) {
   // delete logic
   if (root == NULL) {
     cout << "Tree empty\n";
@@ -636,7 +637,7 @@ void BPTree::remove(keys_struct x) {
     if (!found) // if key does not exist in that leaf node
     {
       cout << "Not found\n";
-      return;
+      return 0;
     }
     // deleting the key
     for (int i = pos; i < cursor->size; i++) {
@@ -661,7 +662,7 @@ void BPTree::remove(keys_struct x) {
              << "\n";
         root = NULL;
       }
-      return;
+      return 0;
     }
     cursor->ptr[cursor->size] = cursor->ptr[cursor->size + 1];
     cursor->ptr[cursor->size + 1] = NULL;
@@ -669,7 +670,7 @@ void BPTree::remove(keys_struct x) {
          << " from leaf node successfully\n";
     if (cursor->size >= (MAX + 1) / 2) // no underflow
     {
-      return;
+      return 0;
     }
     cout << "Underflow in leaf node!\n";
     // underflow condition
@@ -698,7 +699,7 @@ void BPTree::remove(keys_struct x) {
         cout << "Transferred " << cursor->key[0].key_value << " "
              << cursor->key[0].add_vect[0]
              << " from left sibling of leaf node\n";
-        return;
+        return 0;
       }
     }
     if (rightSibling <= parent->size) // check if right sibling exist
@@ -725,7 +726,7 @@ void BPTree::remove(keys_struct x) {
         cout << "Transferred " << cursor->key[cursor->size - 1].key_value << " "
              << cursor->key[cursor->size - 1].add_vect[0]
              << " from right sibling of leaf node\n";
-        return;
+        return 0;
       }
     }
     // must merge and delete a node
@@ -742,7 +743,7 @@ void BPTree::remove(keys_struct x) {
       leftNode->ptr[leftNode->size] = cursor->ptr[cursor->size];
 
       cout << "Merging two leaf nodes\n";
-      removeInternal(parent->key[leftSibling], parent,
+      int numNodeMerged = removeInternal(parent->key[leftSibling], parent,
                      cursor); // delete parent node key
       delete[] cursor->key;
       delete[] cursor->ptr;
@@ -750,6 +751,7 @@ void BPTree::remove(keys_struct x) {
       numNode--;
       cout << "Deleted 1"
            << "\n";
+      return 1 + numNodeMerged;
     } else if (rightSibling <= parent->size) // if right sibling exist
     {
       Node *rightNode = parent->ptr[rightSibling];
@@ -761,13 +763,14 @@ void BPTree::remove(keys_struct x) {
       cursor->size += rightNode->size;
       cursor->ptr[cursor->size] = rightNode->ptr[rightNode->size];
       cout << "Merging two leaf nodes\n";
-      removeInternal(parent->key[rightSibling - 1], parent,
+      int numNodeMerged  =removeInternal(parent->key[rightSibling - 1], parent,
                      rightNode); // delete parent node key
       delete[] rightNode->key;
       delete[] rightNode->ptr;
       delete rightNode;
       numNode--;
       cout << "Deleted 1 \n";
+      return 1 + numNodeMerged;
     }
   }
 }
