@@ -26,7 +26,7 @@ public:
 class BPTree {
   Node *root;
   void insertInternal(keys_struct x, Node *cursor, Node *child);
-  void removeInternal(keys_struct x, Node *cursor, Node *child);
+  int removeInternal(keys_struct x, Node *cursor, Node *child);
   Node *findParent(Node *cursor, Node *child);
   int numNode = 0;
 
@@ -35,7 +35,7 @@ public:
   Node *search(float x, bool flag, bool printer);
   int height(Node *cursor);
   void insert(keys_struct x);
-  void remove(keys_struct x);
+  int remove(keys_struct x);
   int display(Node *cursor, int nodecount, bool first);
   Node *getRoot();
   int getMax();

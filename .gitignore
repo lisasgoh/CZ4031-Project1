@@ -33,3 +33,6 @@ Prerequisites
 
 # IDE
 .vscode
+
+# Project-specific
+visualizations/
