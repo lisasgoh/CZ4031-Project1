@@ -15,13 +15,15 @@ typedef unsigned char uchar;
 const int MAX = 5;
 
 // Represents a datafile record
-struct Record {
+struct Record
+{
   char tconst[10];
   float averageRating;
   uint numVotes;
 };
 
-class MemoryPool {
+class MemoryPool
+{
 private:
   uchar *poolPtr;   // start address of memory pool
   uchar *blockPtr;  // start address of current block
@@ -110,7 +112,7 @@ public:
 
   int getMax() { return MAX; }
 
-  uchar* getPoolPtr(){ return poolPtr; }
+  uchar *getPoolPtr() { return poolPtr; }
 };
 
 #endif // MEMORY_POOL_H

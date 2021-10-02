@@ -11,25 +11,28 @@
 
 using namespace std;
 
-struct keys_struct {
-  float key_value; //Key value.
+struct keys_struct
+{
+  float key_value;         //Key value.
   vector<void *> add_vect; //List of records with same key.
 };
 
 class BPTree;
 
-class Node {
-  bool isLeaf; //Whether node is a leaf node.
+class Node
+{
+  bool isLeaf;      //Whether node is a leaf node.
   keys_struct *key; // Pointer to array of keys in node.
-  int size; // Number of keys in node.
-  Node **ptr; // Pointer to array of pointers in node.
+  int size;         // Number of keys in node.
+  Node **ptr;       // Pointer to array of pointers in node.
   friend class BPTree;
 
 public:
   Node();
 };
 
-class BPTree {
+class BPTree
+{
   Node *root;
   /**
    * @brief 
@@ -100,7 +103,7 @@ public:
    * @param x Key to be inserted.
    */
   void insert(keys_struct x);
-  
+
   /**
    * @brief 
    * Removes key from tree.
@@ -117,7 +120,7 @@ public:
   Node *getRoot();
 
   int getMax();
-  
+
   /**
    * @brief Get the number of nodes.
    * 
@@ -131,7 +134,7 @@ public:
    * @param cursor 
    * @return int number of nodes in tree.
    */
-  int calculateNumNodes(Node* cursor);
+  int calculateNumNodes(Node *cursor);
 
   /**
    * @brief 

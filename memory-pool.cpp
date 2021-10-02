@@ -14,7 +14,8 @@ using namespace std;
 /**
  * Constructor for MemoryPool
  */
-MemoryPool::MemoryPool(uint poolSize, uint blockSize) {
+MemoryPool::MemoryPool(uint poolSize, uint blockSize)
+{
   this->poolSize = poolSize;
   this->blockSize = blockSize;
   this->poolPtr = new uchar[poolSize];
@@ -30,7 +31,8 @@ MemoryPool::MemoryPool(uint poolSize, uint blockSize) {
 /**
  * Destructor for MemoryPool
  */
-MemoryPool::~MemoryPool() {
+MemoryPool::~MemoryPool()
+{
   delete poolPtr;
   poolPtr = nullptr;
 }
@@ -42,8 +44,10 @@ MemoryPool::~MemoryPool() {
  * 3. Update the total size of assigned blocks
  * 4. Update the number of available and assigned blocks
  */
-bool MemoryPool::assignBlock() {
-  if (numBlocksAvailable == 0) {
+bool MemoryPool::assignBlock()
+{
+  if (numBlocksAvailable == 0)
+  {
     cout << "Failed to assign block. Memory is full" << endl;
     return false;
   }
@@ -68,14 +72,17 @@ bool MemoryPool::assignBlock() {
  * 5. Update the total size of assigned records, total number of assigned
  * records, and the current block's offset
  */
-tuple<void *, uint> MemoryPool::writeRecord(uint recordSize) {
-  if (numBlocksAssigned == 0 || blockSize < (blockOffset + recordSize)) {
+tuple<void *, uint> MemoryPool::writeRecord(uint recordSize)
+{
+  if (numBlocksAssigned == 0 || blockSize < (blockOffset + recordSize))
+  {
     if (!assignBlock())
       throw "Failed to write record. No free space in blocks, or no blocks can "
             "be allocated";
   }
 
-  if (recordSize > blockSize) {
+  if (recordSize > blockSize)
+  {
     throw "Failed to write record. Record size > block size";
   }
 
@@ -95,12 +102,15 @@ tuple<void *, uint> MemoryPool::writeRecord(uint recordSize) {
  * we can free up the block
  */
 bool MemoryPool::deleteRecord(uchar *blockAddress, uint offset,
-                              const uint recordSize) {
-  try {
+                              const uint recordSize)
+{
+  try
+  {
     fill(blockAddress + offset, blockAddress + offset + recordSize, '\0');
     sizeOfAssignedRecords -= recordSize;
 
-    if (offset == 0) {
+    if (offset == 0)
+    {
       sizeOfAssignedBlocks -= blockSize;
       numBlocksAssigned -= 1;
       numBlocksAvailable += 1;
@@ -110,7 +120,8 @@ bool MemoryPool::deleteRecord(uchar *blockAddress, uint offset,
     return true;
   }
 
-  catch (exception &e) {
+  catch (exception &e)
+  {
     cout << e.what() << "\n";
     cout << "Record or block deletion failed"
          << "\n";
