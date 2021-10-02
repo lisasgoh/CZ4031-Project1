@@ -16,16 +16,16 @@ using namespace std;
  */
 MemoryPool::MemoryPool(uint poolSize, uint blockSize)
 {
-  this->poolSize = poolSize;
-  this->blockSize = blockSize;
-  this->poolPtr = new uchar[poolSize];
-  this->blockPtr = nullptr;
-  this->blockOffset = 0;
-  this->sizeOfAssignedBlocks = 0;
-  this->sizeOfAssignedRecords = 0;
-  this->numBlocksAssigned = 0;
-  this->numBlocksAvailable = poolSize / blockSize;
-  this->numRecordsAssigned = 0;
+    this->poolSize = poolSize;
+    this->blockSize = blockSize;
+    this->poolPtr = new uchar[poolSize];
+    this->blockPtr = nullptr;
+    this->blockOffset = 0;
+    this->sizeOfAssignedBlocks = 0;
+    this->sizeOfAssignedRecords = 0;
+    this->numBlocksAssigned = 0;
+    this->numBlocksAvailable = poolSize / blockSize;
+    this->numRecordsAssigned = 0;
 }
 
 /**
@@ -33,8 +33,8 @@ MemoryPool::MemoryPool(uint poolSize, uint blockSize)
  */
 MemoryPool::~MemoryPool()
 {
-  delete poolPtr;
-  poolPtr = nullptr;
+    delete poolPtr;
+    poolPtr = nullptr;
 }
 
 /**
@@ -46,17 +46,17 @@ MemoryPool::~MemoryPool()
  */
 bool MemoryPool::assignBlock()
 {
-  if (numBlocksAvailable == 0)
-  {
-    cout << "Failed to assign block. Memory is full" << endl;
-    return false;
-  }
-  blockPtr = poolPtr + (numBlocksAssigned * blockSize);
-  sizeOfAssignedBlocks += blockSize;
-  numBlocksAvailable -= 1;
-  numBlocksAssigned += 1;
-  blockOffset = 0;
-  return true;
+    if (numBlocksAvailable == 0)
+    {
+        cout << "Failed to assign block. Memory is full" << endl;
+        return false;
+    }
+    blockPtr = poolPtr + (numBlocksAssigned * blockSize);
+    sizeOfAssignedBlocks += blockSize;
+    numBlocksAvailable -= 1;
+    numBlocksAssigned += 1;
+    blockOffset = 0;
+    return true;
 }
 
 /**
@@ -74,23 +74,23 @@ bool MemoryPool::assignBlock()
  */
 tuple<void *, uint> MemoryPool::writeRecord(uint recordSize)
 {
-  if (numBlocksAssigned == 0 || blockSize < (blockOffset + recordSize))
-  {
-    if (!assignBlock())
-      throw "Failed to write record. No free space in blocks, or no blocks can "
+    if (numBlocksAssigned == 0 || blockSize < (blockOffset + recordSize))
+    {
+        if (!assignBlock())
+            throw "Failed to write record. No free space in blocks, or no blocks can "
             "be allocated";
-  }
+    }
 
-  if (recordSize > blockSize)
-  {
-    throw "Failed to write record. Record size > block size";
-  }
+    if (recordSize > blockSize)
+    {
+        throw "Failed to write record. Record size > block size";
+    }
 
-  tuple<void *, uint> recordWritten(blockPtr, blockOffset);
-  sizeOfAssignedRecords += recordSize;
-  blockOffset += recordSize;
-  numRecordsAssigned += 1;
-  return recordWritten;
+    tuple<void *, uint> recordWritten(blockPtr, blockOffset);
+    sizeOfAssignedRecords += recordSize;
+    blockOffset += recordSize;
+    numRecordsAssigned += 1;
+    return recordWritten;
 }
 
 /**
@@ -104,27 +104,27 @@ tuple<void *, uint> MemoryPool::writeRecord(uint recordSize)
 bool MemoryPool::deleteRecord(uchar *blockAddress, uint offset,
                               const uint recordSize)
 {
-  try
-  {
-    fill(blockAddress + offset, blockAddress + offset + recordSize, '\0');
-    sizeOfAssignedRecords -= recordSize;
-
-    if (offset == 0)
+    try
     {
-      sizeOfAssignedBlocks -= blockSize;
-      numBlocksAssigned -= 1;
-      numBlocksAvailable += 1;
+        fill(blockAddress + offset, blockAddress + offset + recordSize, '\0');
+        sizeOfAssignedRecords -= recordSize;
+
+        if (offset == 0)
+        {
+            sizeOfAssignedBlocks -= blockSize;
+            numBlocksAssigned -= 1;
+            numBlocksAvailable += 1;
+        }
+
+        numRecordsAssigned -= 1;
+        return true;
     }
 
-    numRecordsAssigned -= 1;
-    return true;
-  }
-
-  catch (exception &e)
-  {
-    cout << e.what() << "\n";
-    cout << "Record or block deletion failed"
-         << "\n";
-    return false;
-  }
+    catch (exception &e)
+    {
+        cout << e.what() << "\n";
+        cout << "Record or block deletion failed"
+             << "\n";
+        return false;
+    }
 }
