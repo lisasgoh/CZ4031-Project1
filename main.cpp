@@ -18,10 +18,10 @@ typedef unsigned char uchar;
 void *startAddress = NULL;
 uint blockSize = 100;
 
-void experiment_2(BPTree root, int count);
+void experiment_2(BPTree root);
 void experiment_3(BPTree root, int numVotes);
-void experiment_4(BPTree root, int numVotes_1, int numVotes_2, unordered_map<int, int> hmap,  unordered_map<int, float> hmaprating);
-void experiment_5(BPTree root, int numVotes, int count);
+void experiment_4(BPTree root, int numVotes_1, int numVotes_2);
+void experiment_5(BPTree root, int numVotes);
 
 // Main program
 int main() {
@@ -84,7 +84,6 @@ int main() {
         }
 
         cout << "Reading completed!\n"; // Storage implementation completed
-        cout << memory_pool.getPoolPtr() <<endl;
         // Print database staistics (Experiment 1)
         cout << "\n---------------- Database Statistics ----------------\n";
         cout << "1. Size of Database: " << memory_pool.getPoolSize() << "\n";
@@ -115,8 +114,6 @@ int main() {
     
      float totalRating = 0;
      int countRating = 0;
-     unordered_map<int, int> hmap;
-unordered_map<int, float> hmaprating;
     // Insert records into B+ tree
     // loop from start of data till end
     for (records_iterator = data.begin(); records_iterator != data.end();
@@ -140,101 +137,64 @@ unordered_map<int, float> hmaprating;
         key.key_value = num;
         key.add_vect.push_back((uchar *) blockAddress + offset);
         root_node.insert(key);
-        if (i > 2 && !root_node.checkValid(root_node.getRoot(), num))
-        {
-             cout << "Not valid here!" << num << endl;
-             break;
-        }
-     //    cout << "INSERT " <<num << endl;
-     //        root_node.printTree(root_node.getRoot());
-
-        iterating_index++;
-
-         // if (num >= 1000 && num <= 42122) {
-          if (num >= 562 && num <= 76912)
-          {
-               if (hmap.find(num) != hmap.end()) {
-                    hmap[num]++;
-                     hmaprating[num] +=  (*(Record *) recordAddress).averageRating;
-               } else {
-                    hmap[num] = 1;
-                    hmaprating[num] =  (*(Record *) recordAddress).averageRating;
-               }
-               totalRating += (*(Record *)recordAddress).averageRating;
-               countRating++;
-          }
+       iterating_index++;
     }
 
   //  root_node.printTree(root_node.getRoot());
 
   cout << "Insertion into B+ tree completed!\n";
-  cout << "Total records: " << countRating <<  endl;
-  cout << "Total rating: " << totalRating << endl;
-  cout << "Average rating: " << totalRating / countRating << endl;
-
-  int count = 3;
 
   // Experiment 2
-  experiment_2(root_node, count);
+  experiment_2(root_node);
 
   // Experiment 3
   experiment_3(root_node, 500);
 
   // Experiment 4
-  experiment_4(root_node,562, 76912, hmap, hmaprating);
+  experiment_4(root_node, 30000, 40000);
 
   // Experiment 5
-  experiment_5(root_node, 1000, count);
+  experiment_5(root_node, 1000);
 
   return 0;
 }
 
 
-void experiment_2(BPTree root, int count) {
+void experiment_2(BPTree root) {
   // Get B+ tree details
   cout << "\n-------------- Experiment 2: Information on B+ Tree "
           "--------------\n";
 
   cout << "Parameter n of B+ Tree: " << root.getMax() << "\n";
-  cout << "Number of Nodes in B+ Tree: " << root.getNumNode() << "\n";
   cout << "Number of Nodes in B+ Tree: " << root.calculateNumNodes(root.getRoot()) << "\n";
-  cout << "B+ Tree Height: " << root.height(root.getRoot()) << "\n";
+  cout << "B+ Tree Height: " << root.getHeight(root.getRoot()) << "\n";
 
   cout << "\nB+ Tree:\n";
-  cout << root.display(root.getRoot(), count, true) << "\n";
-  cout << "\n";
+
+  root.display(root.getRoot());
 }
 
 void experiment_3(BPTree root, int numVotes) {
-  cout << "------------- Experiment 3: Search where numVotes = " << numVotes
+  cout << "\n------------- Experiment 3: Search where numVotes = " << numVotes
        << " -------------\n";
 
-  cout << "These are the index nodes with records which satisfy the condition"
+  cout << "These are the index nodes with records which satisfy the condition:"
        << "\n";
-     root.searchSingle(1240);
+  root.searchSingle(numVotes);
 }
 
-// 1. The number and the content of index nodes the process accesses
-// 2. The number and the content of data blocks the process accesses
-// 3. The average of “averageRating’s” of the records that are returned
-void experiment_4(BPTree root, int numVotes_1, int numVotes_2, unordered_map<int, int> hmap, unordered_map<int, float> hmaprating) {
+void experiment_4(BPTree root, int numVotes_1, int numVotes_2) {
   cout << "\n-------- Experiment 4: Search where " << numVotes_1
        << " <= numVotes <= " << numVotes_2 << " --------\n";
 
-  cout << "These are the index nodes with records which satisfy the condition"
+  cout << "These are the index nodes with records which satisfy the condition:"
        << "\n";
-  root.searchRange(numVotes_1, numVotes_2, hmap, hmaprating);
+  root.searchRange(numVotes_1, numVotes_2);
 }
 
-void experiment_5(BPTree root, int numVotes, int count) {
+void experiment_5(BPTree root, int numVotes) {
   cout << "\n-------- Experiment 5: Delete Movies where numVotes = " << numVotes
        << " --------\n\n";
-
-  // Search records based on condition
-//   cout
-//       << "These are the index nodes with records which satisfy the condition\n";
-//   root.searchSingle(numVotes);
-//   cout << '\n';
 
   cout << "Deleting records where numVotes = " << numVotes
        << " in progress...\n\n";
@@ -250,24 +210,11 @@ void experiment_5(BPTree root, int numVotes, int count) {
   int numNodeRemoved = numNodeBeforeRemoval - numNodeAfterRemoval;
 
   cout << "\nNumber of Nodes Deleted: " << numNodeRemoved << "\n";
-  cout << "Number of Nodes Merged: " << numNodeMerged << "\n";
 
   cout << "\nNumber of Nodes in Updated B+ Tree: " << numNodeAfterRemoval << "\n";
-  cout << "Height of Updated B+ Tree: " << root.height(root.getRoot()) << "\n";
+  cout << "Height of Updated B+ Tree: " << root.getHeight(root.getRoot()) << "\n";
 
   cout << "\nB+ Tree:\n";
-  //cout << root.display(root.getRoot(), count, true) << "\n";
-//   root.printTree(root.getRoot());
-//   key.key_value = 20;
-//   numNodeMerged = root.remove(key);
-//    cout << "Number of Nodes Merged: " << numNodeMerged << "\n";
-//   root.printTree(root.getRoot());
-//   key.key_value = 4;
-//   numNodeMerged = root.remove(key);
-//    cout << "Number of Nodes Merged: " << numNodeMerged << "\n";
-//   root.printTree(root.getRoot());
-//      key.key_value = 29;
-//   numNodeMerged = root.remove(key);
-//      cout << "Number of Nodes Merged: " << numNodeMerged << "\n";
-//   root.printTree(root.getRoot());
+
+  root.display(root.getRoot());
 }

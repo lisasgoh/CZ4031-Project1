@@ -1,4 +1,3 @@
-// int MAX; //size of each node
 #include "b-plus-tree.h"
 #include<bits/stdc++.h>
 #include <queue>
@@ -16,40 +15,30 @@ Node::Node() {
 
 /**
  * @brief 
- * 
- * @param x The first key of the new leaf node
+ * Inserts a new internal node in tree.
+ * @param x The key to be added to the parent internal node.
  * @param cursor The parent.
- * @param child The new leaf node.
+ * @param child The new child node.
  */
 void BPTree::insertInternal(keys_struct x, Node* cursor, Node* child)
 {
-   if (x.key_value == 227 || x.key_value == 148)
-   {
-     cout << "INSERT INTERNAL" << endl;
-   }
     // If there is space in cursor, insert into cursor.
     if(cursor->size < MAX)
     {
-        // since cursor is not full, linear search for position of new key
-        int i = 0; // position of new key
+        // Search for position of new key.
+        int i = 0; 
         while (i < cursor->size && x.key_value > cursor->key[i].key_value) i++;
 
-        //shift keys above new key up TODO refactor as a util?
+        // Make space for new key.
         for(int j = cursor->size; j > i; j--)
         {
-          cursor->key[j] = cursor->key[j-1];  //push each key above the position of inserted key up
+          cursor->key[j] = cursor->key[j-1];
           cursor->ptr[j+1] = cursor->ptr[j];
         }
-        //shift pointers above new pointer up
-        // for(int i = cursor->size+1; i > newKeyPos+1; i--)
-        // {
-        //     cursor->ptr[i] = cursor->ptr[i-1];
-        // }
         cursor->key[i] = x;  // Set new key.
         cursor->size++; // Set new size.
         cursor->ptr[i+1] = child;   // Set new pointer.
     }
-        // split internal node if overflow
     else
     {
         // create another internal node when overflow
@@ -71,20 +60,16 @@ void BPTree::insertInternal(keys_struct x, Node* cursor, Node* child)
         }
         tempPointers[MAX] = cursor->ptr[MAX];
 
-        // for(int i = 0; i < MAX+1; i++)
-        // {
-        //     tempPointers[i] = cursor->ptr[i];
-        // }
         int j;
-        int i = 0;  // position of new key
+        int i = 0; 
 
-        // since cursor is not full, linear search for position of new key
+        // Search for position of new key.
         while(i < MAX && x.key_value > tempKeys[i].key_value)
         {
             i++;
         }
 
-        //shift keys above new key up
+        // Create space for new key.
         for (j = MAX; j > i; j--)
         {
             tempKeys[j] = tempKeys[j-1];
@@ -96,28 +81,7 @@ void BPTree::insertInternal(keys_struct x, Node* cursor, Node* child)
         // Insert new pointer.
         tempPointers[i+1] = child;
 
-        //shift pointers above new pointer up
-        // for(int j = MAX+2;j > i+1; j--){
-        //     tempPointers[j] = tempPointers[j-1];
-        // }
-
-        // tempPointers[i+1] = child;  //set new pointer
-        if (x.key_value == 227 || x.key_value == 148)
-        {
-          cout << "Temp keys!" << endl;
-          for (int i = 0; i < MAX + 1; i++)
-          {
-              cout << tempKeys[i].key_value << ",";
-          }
-
-          cout << "Temp pointers" << endl;
-          for (int i = 0; i < MAX + 2; i++)
-          {
-              cout << tempPointers[i]->key[0].key_value << ",";
-          }
-          cout << endl;
-        }
-        // split cursor to cursor and newInternal with half of original size
+        // Split cursor into two nodes.
         cursor->size = (MAX+1)/2;
         newInternal->size = MAX-(MAX+1)/2;
 
@@ -135,40 +99,12 @@ void BPTree::insertInternal(keys_struct x, Node* cursor, Node* child)
             newInternal->ptr[i] = tempPointers[j];
         }
         newInternal->ptr[newInternal->size] = tempPointers[j];
-        // for(i = 0, j = cursor->size+1; i < newInternal->size+1; i++, j++){
-        //     newInternal->ptr[i] = tempPointers[j];
-        // }
-        // the note we are splitting is a root node
-        if (x.key_value == 227 || x.key_value == 148)
-        {
-          cout << "First node keys" << endl;
-          for (int i = 0; i < cursor->size; i++)
-          {
-              cout << cursor->key[i].key_value << ",";
-          }
-          cout << "First node pointers" << endl;
-          for (int i = 0; i < cursor->size + 1; i++)
-          {
-              cout << cursor->ptr[i]->key[0].key_value << ",";
-          }
-
-          cout << "Second node keys" << endl;
-          for (int i = 0; i < newInternal->size; i++)
-          {
-              cout << newInternal->key[i].key_value << ",";
-          }
-          cout << "Second node pointers" << endl;
-        }
-        for (int i = 0; i < newInternal->size + 1; i++)
-        {
-            cout << newInternal->ptr[i]->key[0].key_value << ",";
-        }
 
         if (root == cursor)
         {
-            //creation of new node when splitting root node
             Node* newRoot = new Node;
             numNode ++;
+            // New key that should be added in the root node.
             keys_struct newKey = getNewKey(newInternal);
             newRoot->key[0] = newKey;
             newRoot->ptr[0] = cursor;
@@ -181,52 +117,14 @@ void BPTree::insertInternal(keys_struct x, Node* cursor, Node* child)
         else
         {   // New key that should be added in the parent node.
             keys_struct newKey = getNewKey(newInternal);
-            if (x.key_value == 227 || x.key_value == 148)
-            {
-              cout << "NEW KEY " << newKey.key_value << endl;
-            }
             insertInternal(newKey, findParent(root, cursor), newInternal);
         }
     }
 }
 
-bool BPTree:: checkValid(Node* cursor, float insert)
-{
-    while (!cursor->isLeaf)
-    {
-      cursor = cursor->ptr[0];
-    }
-    int i = 0;
-    while (cursor != nullptr && cursor->key[i].key_value <= 42764) 
-    {
-      for (int i = 1; i < cursor->size; i++)
-      {
-          if (cursor->key[i].key_value <= cursor->key[i-1].key_value)
-          {
-              return false;
-          }
-      }
-      if (i == cursor->size - 1 && cursor->ptr[cursor->size] != nullptr && cursor->key[i].key_value <= 42764) 
-      {
-          if (cursor->ptr[cursor->size]->key[0].key_value >= cursor->key[i].key_value)
-          {
-            return false;
-          }
-          cursor = cursor->ptr[cursor->size];
-          i = 0;
-          continue;
-      }
-      else{
-        break;
-      }
-      i++;
-    }
-    return true;;
-
-}
 /**
- * @brief Get the key that is the smallest on the right subtree.
- * 
+ * @brief
+ * Get the key that is the smallest on the right subtree.
  * @param cursor Current node
  * @return keys_struct the smallest key
  */
@@ -241,9 +139,8 @@ keys_struct BPTree:: getNewKey(Node* cursor)
 
 /**
  * @brief 
- * 
- * @param x 
- * @param newKey 
+ * Insert key into tree.
+ * @param x Key to be inserted.
  */
 void BPTree::insert(keys_struct x) 
 {
@@ -285,21 +182,11 @@ void BPTree::insert(keys_struct x)
         if (cursor->key[k].key_value == x.key_value)
       {
          cursor->key[k].add_vect.push_back(x.add_vect[0]);
-        if (x.key_value == 1240)
-        {
-          cout << "Numberof records: " << cursor->key[k].add_vect.size() << endl;
-        }
          return;
       }
      }
-        if (x.key_value == 1240)
-        {
-            cout << "DOES NOT EXIST" << endl;
-            printTree(root);
-        }
      // There is space for new element.
     if (cursor->size < MAX) {
-         //cout <<  "LESS THAN MAX!" <<endl;
       int i = 0;
 
       // Continue iterating while cursor has not reached the last key and the key to be inserted is larger
@@ -315,7 +202,6 @@ void BPTree::insert(keys_struct x)
         for (int j = cursor->size; j > i; j--) 
         {
             cursor->key[j] = cursor->key[j - 1];
-            // TODO: shift pointesr?? (ptrs are null here??)
         }
 
         // Insert key into the node.
@@ -323,8 +209,6 @@ void BPTree::insert(keys_struct x)
         cursor->size++;
         cursor->ptr[cursor->size] = cursor->ptr[cursor->size - 1];
         cursor->ptr[cursor->size - 1] = NULL;
-        // cout<<"Inserted "<< x.key_value << " " << x.add_vect[0] <<"
-        // successfully\n";
         return;
     
     }
@@ -420,11 +304,11 @@ void BPTree::insert(keys_struct x)
 
 /**
  * @brief 
- * 
+ * Remove internal node.
  * @param x The key of the node to be removed.
  * @param cursor Parent.
  * @param child The removed node.
- * @param child The retained node.
+ * @param newNode The retained node.
  * @return int number of nodes that are merged.
  */
 int BPTree::removeInternal(keys_struct x, Node* cursor, Node* child, Node* newNode)
@@ -459,19 +343,6 @@ int BPTree::removeInternal(keys_struct x, Node* cursor, Node* child, Node* newNo
             return 0;
         }
     }
-
-    // cout << "Current cursor keys: " << endl;
-    // for (int k = 0; k < cursor->size; k++)
-    // {
-    //     cout << cursor->key[k].key_value << "|";
-    // }
-    // cout << endl;
-    // cout << "Current cursor pointers: " << endl;
-    // for (int k = 0; k < cursor->size + 1; k++)
-    // {
-    //     cout << cursor->ptr[k]->key[0].key_value << "|";
-    // }
-    // cout << endl;
     // Search for the key that is to be deleted.
     int pos = 0;
     while (pos < cursor->size && x.key_value != cursor->key[pos].key_value) pos++;
@@ -484,11 +355,7 @@ int BPTree::removeInternal(keys_struct x, Node* cursor, Node* child, Node* newNo
     // Search for the position of the pointer that is to be deleted.
     pos = 0;
     while (pos < cursor->size + 1 && cursor->ptr[pos] != child) pos++;
-    // delete[] child->key;
-    // delete[] child->ptr;
-    // delete child;
 
-    cout << "Pos of pointer pointing to child node to be deleted: " << pos << endl;
     // Shift each pointer to the left to remove pointer.
     for(int i = pos; i < cursor->size + 1; i++)
     {
@@ -505,27 +372,6 @@ int BPTree::removeInternal(keys_struct x, Node* cursor, Node* child, Node* newNo
         cout<<"Deleted "<< x.key_value << " " <<" from internal node successfully\n";
         return 0;
     }
-
-    // cout<< "Internal node has insufficient keys!" << endl;
-
-    // cout << "Current cursor keys: " << endl;
-    // for (int k = 0; k < cursor->size; k++)
-    // {
-    //     cout << cursor->key[k].key_value << "|";
-    // }
-    // cout << endl;
-    // cout << "Current cursor pointers: " << endl;
-    // for (int k = 0; k < cursor->size + 1; k++)
-    // {
-    //     cout << cursor->ptr[k]->key[0].key_value << "|";
-    // }
-    // cout << endl;
-    // when reach here, size is too small(underflow)
-
-    // ignore minimum size if node is root
-    // if(cursor == root){
-    //     return;
-    // }
     // Try to get transfer keys from sibling nodes.
 
     // Get parent of internal node.
@@ -671,7 +517,12 @@ int BPTree::removeInternal(keys_struct x, Node* cursor, Node* child, Node* newNo
     }
 }
 
-
+/**
+ * @brief 
+ * Remove key from tree.
+ * @param x Key to be removed.
+ * @return int Number of removed nodes.
+ */
 int BPTree::remove(keys_struct x) {
   // delete logic
   if (root == nullptr) 
@@ -701,7 +552,7 @@ int BPTree::remove(keys_struct x) {
             // i is now the pointer index
         }
         leftSibling = i - 1;
-        rightSibling = i + 1; // Right sibling cannot be from another parent node.
+        rightSibling = i + 1;
         cursor = cursor->ptr[i];
     }
     // Search for the key if it exists.
@@ -727,7 +578,7 @@ int BPTree::remove(keys_struct x) {
       }
       if (cursor->size == 0) // if all keys are deleted
       {
-        // cout<<"Tree died\n";
+        cout<< "Tree is deleted!" << endl;
         delete[] cursor->key;
         delete[] cursor->ptr;
         delete cursor;
@@ -750,7 +601,7 @@ int BPTree::remove(keys_struct x) {
       // Update parent if necessary.
       if (pos == 0)
       {
-           cout << "Update parent!" << endl;
+          cout << "Update parent!" << endl;
         parent->key[leftSibling] = cursor->key[0];
       }
       return 0;
@@ -871,25 +722,30 @@ int BPTree::remove(keys_struct x) {
   }
 }
 
+/**
+ * @brief 
+ * Use depth-first search to find parent of child.
+ * @param cursor Possible parent.
+ * @param child Child.
+ * @return Node* 
+ */
 Node *BPTree::findParent(Node *cursor, Node *child) {
-  // find parent of child node within cursor use DFS
-  // returns NULL if child has no parent in cursor
   Node *parent;
-  // skip search if cursor is on last/second last level
-  // cursor cannot be a parent if it is leaf node
-  // cursor cannot be second last level since function is not called when child
-  // node is leaf node during insertion
+
+  // If cursor is on the last/second last level, skip search.
+  // Cursor cannot be a parent if it is leaf node.
+  // Cursor cannot be second-last level since findParent() is not called when child
+  // node is leaf during insertion.
   if (cursor->isLeaf || (cursor->ptr[0])->isLeaf) {
     return NULL;
   }
-  // go through each pointer of cursor
+  // Iterate through each pointer and check if pointer points to child.
   for (int i = 0; i < cursor->size + 1; i++) {
-    // if pointer points to child, cursor is the parent
     if (cursor->ptr[i] == child) {
       parent = cursor;
       return parent;
     }
-    // else try to find parent among children of cursor
+    // Else try to find parent from children of cursor.
     else {
       parent = findParent(cursor->ptr[i], child);
       if (parent != NULL)
@@ -899,8 +755,13 @@ Node *BPTree::findParent(Node *cursor, Node *child) {
   return parent;
 }
 
-
-void BPTree::searchRange(float lowerBoundKey, float upperBoundKey, unordered_map<int, int> hmap, unordered_map<int, float> hmaprating) 
+/**
+ * @brief 
+ * Search for leaf nodes within a specified range.
+ * @param lowerBoundKey Lower range.
+ * @param upperBoundKey Upper range.
+ */
+void BPTree::searchRange(float lowerBoundKey, float upperBoundKey) 
 {
     int numIndexNodes = 0;
     if (root == nullptr) 
@@ -943,51 +804,23 @@ void BPTree::searchRange(float lowerBoundKey, float upperBoundKey, unordered_map
         set<uint> s;
         while (cursor->key[i].key_value <= upperBoundKey) 
         {
-            int numVotes = cursor->key[i].key_value;
-            if (hmap.find(numVotes) != hmap.end())
-            {
-                if (hmap[numVotes] != cursor->key[i].add_vect.size())
-                {
-                    cout << "Num records with: " << numVotes << " is different! Expected: " << hmap[numVotes] << ", Actual: " << cursor->key[i].add_vect.size() << endl;
-                }
-                else
-                {
-                    // cout << "SAMEEE" << endl;
-                    hmap.erase(numVotes);
-                }
-            }
-            else
-            {
-                cout << "Num votes: " << numVotes << " does not exist!" << endl;
-            }
-            float keyTotal = 0;
             for (int j = 0; j < cursor->key[i].add_vect.size(); j++) 
             {
                 float averageRating = (*(Record *)cursor->key[i].add_vect[j]).averageRating;
                 totalRating += averageRating;
-                keyTotal += averageRating;
                 intptr_t dataBlockNo = ((intptr_t)(Record *)cursor->key[i].add_vect[j] - (intptr_t) startAddress)/ blockSize;
                 s.insert(dataBlockNo);
                 totalRecords++;
                 // get tconst value
-                // cout << (*(Record *)cursor->key[i].add_vect[j]).tconst << " | "
-                //         // get record address
-                //         << (Record *)cursor->key[i].add_vect[j] << " | "
-                //         // get block no
-                //         << dataBlockNo << " | "
-                //         // get block addr
-                //         << (Record *)((intptr_t)startAddress + (dataBlockNo * blockSize))
-                //         << endl;
+                cout << (*(Record *)cursor->key[i].add_vect[j]).tconst << " | "
+                        // get record address
+                        << (Record *)cursor->key[i].add_vect[j] << " | "
+                        // get block no
+                        << dataBlockNo << " | "
+                        // get block addr
+                        << (Record *)((intptr_t)startAddress + (dataBlockNo * blockSize))
+                        << endl;
             }
-               if (hmaprating[numVotes] != keyTotal)
-                {
-                    cout << "Num records with: " << numVotes << " is different! Expected: " << hmaprating[numVotes] << ", Actual: " << keyTotal << endl;
-                }
-                else
-                {
-                    cout << "SAMEEE" << endl;
-                    hmaprating.erase(numVotes);
-                }
             if (i == cursor->size - 1 && cursor->ptr[cursor->size] != nullptr && cursor->key[i].key_value <= upperBoundKey) 
             {
                 cursor = cursor->ptr[cursor->size];
@@ -997,13 +830,16 @@ void BPTree::searchRange(float lowerBoundKey, float upperBoundKey, unordered_map
             i++;
         }
         cout << "Total number of records: " << totalRecords << endl;
-        cout << "Total rating: " << totalRating << endl;
         cout << "Average Rating: " << totalRating / totalRecords << endl;
         cout << "Number of data blocks accessed: " << s.size() << endl;
     }
 }
 
-
+/**
+ * @brief 
+ * Search for a single leaf node with a specified key value.
+ * @param key Key to be searched for.
+ */
 void BPTree::searchSingle(float key) 
 {
     int numIndexNodes = 0;
@@ -1039,9 +875,7 @@ void BPTree::searchSingle(float key)
         }
         cout << "Number of index nodes accessed: " << numIndexNodes << endl;
         int i = 0;
-        // cout << "Key index: " << cursor->key[i].key_value << endl;
         while (cursor->key[i].key_value < key) i++;
-        // cout << "Key index: " << cursor->key[i].key_value << endl;
         float totalRating = 0;
         set<uint> s;
         if (cursor->key[i].key_value == key) 
@@ -1053,14 +887,14 @@ void BPTree::searchSingle(float key)
                          intptr_t dataBlockNo = ((intptr_t)(Record *)cursor->key[i].add_vect[j] - (intptr_t) startAddress)/ blockSize;
                 s.insert(dataBlockNo);
                 // get tconst value
-                // cout << (*(Record *)cursor->key[i].add_vect[j]).tconst << " | "
-                //         // get record address
-                //         << (Record *)cursor->key[i].add_vect[j] << " | "
-                //         // get block no
-                //         << dataBlockNo << " | "
-                //         // get block addr
-                //         << (Record *)((intptr_t)startAddress + (dataBlockNo * blockSize))
-                //         << endl;
+                cout << (*(Record *)cursor->key[i].add_vect[j]).tconst << " | "
+                        // get record address
+                        << (Record *)cursor->key[i].add_vect[j] << " | "
+                        // get block no
+                        << dataBlockNo << " | "
+                        // get block addr
+                        << (Record *)((intptr_t)startAddress + (dataBlockNo * blockSize))
+                        << endl;
             }
         }
         else
@@ -1072,54 +906,25 @@ void BPTree::searchSingle(float key)
     }
 }
 
-// Recursively traverse tree to find height.
-int BPTree::height(Node *cursor) {
+/**
+ * @brief 
+ * Recursively traverse tree to find height.
+ * @param cursor
+ * @return int Height of tree.
+ */
+int BPTree::getHeight(Node *cursor) {
  if (cursor->isLeaf) {
     return 1;
   } 
-  return height(cursor->ptr[0]) + 1;
+  return getHeight(cursor->ptr[0]) + 1;
 }
 
-
-int BPTree::display(Node *cursor, int nodecount, bool first) {
-  if (first == true) {
-    for (int i = 0; i < cursor->size + 1; i++) {
-      if (i != cursor->size) {
-        cout << 0 << " " << cursor->key[i].key_value << "\n";
-      }
-      cout << 1 << "\n";
-      // cout << cursor->ptr[i]->size << " Size \n";
-      for (int j = 0; j < cursor->ptr[i]->size; j++) {
-        cout << cursor->ptr[i]->key[j].key_value << " ";
-      }
-      cout << "\n";
-    }
-    return 0;
-  } else {
-    int thisnode;
-    if (cursor->isLeaf == false) {
-      for (int i = 0; i < cursor->size + 1; i++) {
-        thisnode = display(cursor->ptr[i], 0, false);
-        nodecount = nodecount + thisnode;
-        // cout<<"\n"<<nodecount<<"\n";
-
-        // read(curr->child_ptr[i]);
-      }
-      nodecount++;
-      return nodecount;
-    }
-    if (cursor->isLeaf == true) {
-
-      for (int i = 0; i < cursor->size; i++) {
-        cout << cursor->key[i].key_value << " ";
-      }
-      return 1;
-    }
-    return 0;
-  }
-}
-
-void BPTree::printTree(Node *cursor) {
+/**
+ * @brief 
+ * Prints entire tree.
+ * @param cursor Root node.
+ */
+void BPTree::printEntireTree(Node *cursor) {
  // Base Case
     if (cursor == NULL)  return;
  
@@ -1155,6 +960,34 @@ void BPTree::printTree(Node *cursor) {
     }
 }
 
+/**
+ * @brief
+ * Display root node and 1st child node.
+ * @param cursor
+ */
+void BPTree::display(Node* cursor)
+{
+    cout << "Root node: " << endl;
+    for (int i = 0; i < cursor->size; i++)
+    {
+      cout << cursor->key[i].key_value << "|";
+    }
+    cout << endl;
+    cout << "First child node: " << endl;
+    cursor = cursor->ptr[0];
+    for (int i = 0; i < cursor->size; i++)
+    {
+      cout << cursor->key[i].key_value << "|";
+    }
+    cout << endl;
+}
+
+/**
+ * @brief 
+ * Calculate the number of nodes with BFS.
+ * @param cursor Root node.
+ * @return int number of nodes in tree.
+ */
 int BPTree::calculateNumNodes(Node *cursor) {
  // Base Case
     if (cursor == NULL)  return 0;
