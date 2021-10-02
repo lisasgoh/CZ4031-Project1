@@ -27,10 +27,10 @@ void experiment_5(BPTree root, int numVotes);
 int main() {
 
     cout << "\n------------ Welcome to the Database Management System "
-            "------------\n"
-            "This is a simulation of the database management system, to "
-            "demonstrate storage and indexing of a database, designed by Group "
-            "8.\n"
+         "------------\n"
+         "This is a simulation of the database management system, to "
+         "demonstrate storage and indexing of a database, designed by Group "
+         "8.\n"
          << "\n";
 
 
@@ -72,7 +72,7 @@ int main() {
             // dataset
             line_stream >> record.averageRating >> record.numVotes;
             tuple<void *, uint> data_record =
-                    memory_pool.writeRecord(sizeof(record));
+                memory_pool.writeRecord(sizeof(record));
             data.push_back(data_record);
 
             // void * pointer to store the address of the blocks in the memory
@@ -111,19 +111,19 @@ int main() {
     cout << "Inserting records into B+ tree in progress...\n";
 
     int i =1;
-    
-     float totalRating = 0;
-     int countRating = 0;
+
+    float totalRating = 0;
+    int countRating = 0;
     // Insert records into B+ tree
     // loop from start of data till end
     for (records_iterator = data.begin(); records_iterator != data.end();
-         ++records_iterator) {
+            ++records_iterator) {
 
         void *blockAddress = (uchar *) get<0>(*records_iterator);
         uint offset = get<1>(*records_iterator);
 
         // get starting block address
-        if (startAddress == NULL){
+        if (startAddress == NULL) {
             startAddress = blockAddress;
         }
 
@@ -137,84 +137,84 @@ int main() {
         key.key_value = num;
         key.add_vect.push_back((uchar *) blockAddress + offset);
         root_node.insert(key);
-       iterating_index++;
+        iterating_index++;
     }
 
-  //  root_node.printTree(root_node.getRoot());
+    //  root_node.printTree(root_node.getRoot());
 
-  cout << "Insertion into B+ tree completed!\n";
+    cout << "Insertion into B+ tree completed!\n";
 
-  // Experiment 2
-  experiment_2(root_node);
+    // Experiment 2
+    experiment_2(root_node);
 
-  // Experiment 3
-  experiment_3(root_node, 500);
+    // Experiment 3
+    experiment_3(root_node, 500);
 
-  // Experiment 4
-  experiment_4(root_node, 30000, 40000);
+    // Experiment 4
+    experiment_4(root_node, 30000, 40000);
 
-  // Experiment 5
-  experiment_5(root_node, 1000);
+    // Experiment 5
+    experiment_5(root_node, 1000);
 
-  return 0;
+    return 0;
 }
 
 
 void experiment_2(BPTree root) {
-  // Get B+ tree details
-  cout << "\n-------------- Experiment 2: Information on B+ Tree "
-          "--------------\n";
+    // Get B+ tree details
+    cout << "\n-------------- Experiment 2: Information on B+ Tree "
+         "--------------\n";
 
-  cout << "Parameter n of B+ Tree: " << root.getMax() << "\n";
-  cout << "Number of Nodes in B+ Tree: " << root.calculateNumNodes(root.getRoot()) << "\n";
-  cout << "B+ Tree Height: " << root.getHeight(root.getRoot()) << "\n";
+    cout << "Parameter n of B+ Tree: " << root.getMax() << "\n";
+    cout << "Number of Nodes in B+ Tree: " << root.calculateNumNodes(root.getRoot()) << "\n";
+    cout << "B+ Tree Height: " << root.getHeight(root.getRoot()) << "\n";
 
-  cout << "\nB+ Tree:\n";
+    cout << "\nB+ Tree:\n";
 
-  root.display(root.getRoot());
+    root.display(root.getRoot());
 }
 
 void experiment_3(BPTree root, int numVotes) {
-  cout << "\n------------- Experiment 3: Search where numVotes = " << numVotes
-       << " -------------\n";
+    cout << "\n------------- Experiment 3: Search where numVotes = " << numVotes
+         << " -------------\n";
 
-  cout << "These are the index nodes with records which satisfy the condition:"
-       << "\n";
-  root.searchSingle(numVotes);
+    cout << "These are the index nodes with records which satisfy the condition:"
+         << "\n";
+    root.searchSingle(numVotes);
 }
 
 void experiment_4(BPTree root, int numVotes_1, int numVotes_2) {
-  cout << "\n-------- Experiment 4: Search where " << numVotes_1
-       << " <= numVotes <= " << numVotes_2 << " --------\n";
+    cout << "\n-------- Experiment 4: Search where " << numVotes_1
+         << " <= numVotes <= " << numVotes_2 << " --------\n";
 
-  cout << "These are the index nodes with records which satisfy the condition:"
-       << "\n";
-  root.searchRange(numVotes_1, numVotes_2);
+    cout << "These are the index nodes with records which satisfy the condition:"
+         << "\n";
+    root.searchRange(numVotes_1, numVotes_2);
 }
 
 void experiment_5(BPTree root, int numVotes) {
-  cout << "\n-------- Experiment 5: Delete Movies where numVotes = " << numVotes
-       << " --------\n\n";
+    cout << "\n-------- Experiment 5: Delete Movies where numVotes = " << numVotes
+         << " --------\n\n";
 
-  cout << "Deleting records where numVotes = " << numVotes
-       << " in progress...\n\n";
+    cout << "Deleting records where numVotes = " << numVotes
+         << " in progress...\n\n";
 
-  keys_struct key;
-  key.key_value = numVotes;
-  key.add_vect.push_back((uchar *)nullptr);
+    keys_struct key;
+    key.key_value = numVotes;
+    key.add_vect.push_back((uchar *)nullptr);
 
 //   root.printTree(root.getRoot());
-  int numNodeBeforeRemoval = root.calculateNumNodes(root.getRoot());
-  int numNodeMerged = root.remove(key);
-  int numNodeAfterRemoval = root.calculateNumNodes(root.getRoot());
-  int numNodeRemoved = numNodeBeforeRemoval - numNodeAfterRemoval;
+    int numNodeBeforeRemoval = root.calculateNumNodes(root.getRoot());
+    int numNodeMerged = root.remove(key);
+    int numNodeAfterRemoval = root.calculateNumNodes(root.getRoot());
+    int numNodeRemoved = numNodeBeforeRemoval - numNodeAfterRemoval;
 
-  cout << "\nNumber of Nodes Deleted: " << numNodeRemoved << "\n";
+    cout << "\nNumber of Nodes Deleted: " << numNodeRemoved << "\n";
 
-  cout << "\nNumber of Nodes in Updated B+ Tree: " << numNodeAfterRemoval << "\n";
-  cout << "Height of Updated B+ Tree: " << root.getHeight(root.getRoot()) << "\n";
+    cout << "\nNumber of Nodes in Updated B+ Tree: " << numNodeAfterRemoval << "\n";
+    cout << "Height of Updated B+ Tree: " << root.getHeight(root.getRoot()) << "\n";
 
-  cout << "\nB+ Tree:\n";
+    cout << "\nB+ Tree:\n";
 
-  root.display(root.getRoot());
+    root.display(root.getRoot());
 }
