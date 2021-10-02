@@ -20,7 +20,7 @@ uint blockSize = 100;
 
 void experiment_2(BPTree root, int count);
 void experiment_3(BPTree root, int numVotes);
-void experiment_4(BPTree root, int numVotes_1, int numVotes_2, unordered_map<int, int> hmap);
+void experiment_4(BPTree root, int numVotes_1, int numVotes_2, unordered_map<int, int> hmap,  unordered_map<int, float> hmaprating);
 void experiment_5(BPTree root, int numVotes, int count);
 
 // Main program
@@ -116,7 +116,7 @@ int main() {
      float totalRating = 0;
      int countRating = 0;
      unordered_map<int, int> hmap;
-
+unordered_map<int, float> hmaprating;
     // Insert records into B+ tree
     // loop from start of data till end
     for (records_iterator = data.begin(); records_iterator != data.end();
@@ -151,19 +151,21 @@ int main() {
         iterating_index++;
 
          // if (num >= 1000 && num <= 42122) {
-          if (num >= 1000 && num <= 42122)
+          if (num >= 562 && num <= 76912)
           {
                if (hmap.find(num) != hmap.end()) {
                     hmap[num]++;
+                     hmaprating[num] +=  (*(Record *) recordAddress).averageRating;
                } else {
                     hmap[num] = 1;
+                    hmaprating[num] =  (*(Record *) recordAddress).averageRating;
                }
                totalRating += (*(Record *)recordAddress).averageRating;
                countRating++;
           }
     }
 
-    root_node.printTree(root_node.getRoot());
+  //  root_node.printTree(root_node.getRoot());
 
   cout << "Insertion into B+ tree completed!\n";
   cout << "Total records: " << countRating <<  endl;
@@ -179,7 +181,7 @@ int main() {
   experiment_3(root_node, 500);
 
   // Experiment 4
-  experiment_4(root_node, 1000, 42122, hmap);
+  experiment_4(root_node,562, 76912, hmap, hmaprating);
 
   // Experiment 5
   experiment_5(root_node, 1000, count);
@@ -215,13 +217,13 @@ void experiment_3(BPTree root, int numVotes) {
 // 1. The number and the content of index nodes the process accesses
 // 2. The number and the content of data blocks the process accesses
 // 3. The average of “averageRating’s” of the records that are returned
-void experiment_4(BPTree root, int numVotes_1, int numVotes_2, unordered_map<int, int> hmap) {
+void experiment_4(BPTree root, int numVotes_1, int numVotes_2, unordered_map<int, int> hmap, unordered_map<int, float> hmaprating) {
   cout << "\n-------- Experiment 4: Search where " << numVotes_1
        << " <= numVotes <= " << numVotes_2 << " --------\n";
 
   cout << "These are the index nodes with records which satisfy the condition"
        << "\n";
-  root.searchRange(numVotes_1, numVotes_2, hmap);
+  root.searchRange(numVotes_1, numVotes_2, hmap, hmaprating);
 }
 
 void experiment_5(BPTree root, int numVotes, int count) {

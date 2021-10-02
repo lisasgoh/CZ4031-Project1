@@ -39,7 +39,8 @@ class BPTree {
 public:
   BPTree();
   void searchSingle(float key);
-  void searchRange(float lowerKeyBound, float upperKeyBound, unordered_map<int, int> hmap);
+  //void searchRange(float lowerKeyBound, float upperKeyBound, unordered_map<int, int> hmap);
+  void searchRange(float lowerKeyBound, float upperKeyBound, unordered_map<int, int> hmap,unordered_map<int, float> hmaprating);
   bool checkValid(Node* root, float insert);
   //void searchRange(float lowerKeyBound, float upperKeyBound);
   Node * search2(float x, bool flag, bool printer);

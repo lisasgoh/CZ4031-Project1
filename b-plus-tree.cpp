@@ -900,7 +900,7 @@ Node *BPTree::findParent(Node *cursor, Node *child) {
 }
 
 
-void BPTree::searchRange(float lowerBoundKey, float upperBoundKey, unordered_map<int, int> hmap) 
+void BPTree::searchRange(float lowerBoundKey, float upperBoundKey, unordered_map<int, int> hmap, unordered_map<int, float> hmaprating) 
 {
     int numIndexNodes = 0;
     if (root == nullptr) 
@@ -952,6 +952,7 @@ void BPTree::searchRange(float lowerBoundKey, float upperBoundKey, unordered_map
                 }
                 else
                 {
+                    // cout << "SAMEEE" << endl;
                     hmap.erase(numVotes);
                 }
             }
@@ -959,10 +960,12 @@ void BPTree::searchRange(float lowerBoundKey, float upperBoundKey, unordered_map
             {
                 cout << "Num votes: " << numVotes << " does not exist!" << endl;
             }
+            float keyTotal = 0;
             for (int j = 0; j < cursor->key[i].add_vect.size(); j++) 
             {
                 float averageRating = (*(Record *)cursor->key[i].add_vect[j]).averageRating;
                 totalRating += averageRating;
+                keyTotal += averageRating;
                 intptr_t dataBlockNo = ((intptr_t)(Record *)cursor->key[i].add_vect[j] - (intptr_t) startAddress)/ blockSize;
                 s.insert(dataBlockNo);
                 totalRecords++;
@@ -976,6 +979,15 @@ void BPTree::searchRange(float lowerBoundKey, float upperBoundKey, unordered_map
                 //         << (Record *)((intptr_t)startAddress + (dataBlockNo * blockSize))
                 //         << endl;
             }
+               if (hmaprating[numVotes] != keyTotal)
+                {
+                    cout << "Num records with: " << numVotes << " is different! Expected: " << hmaprating[numVotes] << ", Actual: " << keyTotal << endl;
+                }
+                else
+                {
+                    cout << "SAMEEE" << endl;
+                    hmaprating.erase(numVotes);
+                }
             if (i == cursor->size - 1 && cursor->ptr[cursor->size] != nullptr && cursor->key[i].key_value <= upperBoundKey) 
             {
                 cursor = cursor->ptr[cursor->size];
