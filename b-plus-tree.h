@@ -7,6 +7,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <unordered_map>
 
 using namespace std;
 
@@ -32,12 +33,15 @@ class BPTree {
   void insertInternal(keys_struct x, Node *cursor, Node *child);
   int removeInternal(keys_struct x, Node *cursor, Node *child, Node *newNode);
   Node *findParent(Node *cursor, Node *child);
+  keys_struct getNewKey(Node *cursor);
   int numNode = 0;
 
 public:
   BPTree();
   void searchSingle(float key);
-  void searchRange(float lowerKeyBound, float upperKeyBound);
+  void searchRange(float lowerKeyBound, float upperKeyBound, unordered_map<int, int> hmap);
+  bool checkValid(Node* root, float insert);
+  //void searchRange(float lowerKeyBound, float upperKeyBound);
   Node * search2(float x, bool flag, bool printer);
   int height(Node *cursor);
   void insert(keys_struct x);
@@ -46,6 +50,7 @@ public:
   Node *getRoot();
   int getMax();
   int getNumNode() { return numNode; }
+  int calculateNumNodes(Node* cursor);
   void printTree(Node *cursor);
   //    void cleanUp(Node* cursor)
   //    {

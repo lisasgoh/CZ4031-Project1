@@ -1,8 +1,11 @@
 // int MAX; //size of each node
-#include "b_plus_tree.h"
+#include "b-plus-tree.h"
+#include<bits/stdc++.h>
 #include <queue>
+#include <unordered_map>
 using namespace std;
 extern void *startAddress;
+extern uint blockSize;
 
 Node::Node() {
   // dynamic memory allocation
@@ -10,20 +13,21 @@ Node::Node() {
   ptr = new Node *[MAX + 1];
   isLeaf = true;
 }
+
 /**
  * @brief 
  * 
- * @param x The key of the new leaf node
- * @param cursor 
- * @param child 
+ * @param x The first key of the new leaf node
+ * @param cursor The parent.
+ * @param child The new leaf node.
  */
 void BPTree::insertInternal(keys_struct x, Node* cursor, Node* child)
 {
-    // cout << cursor << endl;
-    // cout << root << endl;
-    // cout << "Passed to internal: " << x.key_value << endl;
-    //  cout << "Child first key " << child->key[0].key_value << endl;
-    // insert into current node if there is space in cursor
+   if (x.key_value == 227 || x.key_value == 148)
+   {
+     cout << "INSERT INTERNAL" << endl;
+   }
+    // If there is space in cursor, insert into cursor.
     if(cursor->size < MAX)
     {
         // since cursor is not full, linear search for position of new key
@@ -41,9 +45,9 @@ void BPTree::insertInternal(keys_struct x, Node* cursor, Node* child)
         // {
         //     cursor->ptr[i] = cursor->ptr[i-1];
         // }
-        cursor->key[i] = x;  // set new key
-        cursor->size++; //set new size
-        cursor->ptr[i+1] = child;   // set new pointer
+        cursor->key[i] = x;  // Set new key.
+        cursor->size++; // Set new size.
+        cursor->ptr[i+1] = child;   // Set new pointer.
     }
         // split internal node if overflow
     else
@@ -53,10 +57,10 @@ void BPTree::insertInternal(keys_struct x, Node* cursor, Node* child)
         numNode++;
         newInternal->isLeaf = false;
 
-        // Create temporary node to with extra key and pointer to store keys and pointers.
+        // Create temporary node with extra key and pointer to store keys and pointers.
         keys_struct tempKeys[MAX+1];
 
-         //MAX refers to the number of keys, pointer = number of keys + 1
+        // MAX refers to the number of keys, pointer = number of keys + 1
         Node* tempPointers[MAX+2];
 
         // Copy keys and nodes to the temporary node.
@@ -75,12 +79,13 @@ void BPTree::insertInternal(keys_struct x, Node* cursor, Node* child)
         int i = 0;  // position of new key
 
         // since cursor is not full, linear search for position of new key
-        while(i < MAX && x.key_value > tempKeys[i].key_value){
+        while(i < MAX && x.key_value > tempKeys[i].key_value)
+        {
             i++;
         }
 
         //shift keys above new key up
-        for (j = MAX+1; j > i; j--)
+        for (j = MAX; j > i; j--)
         {
             tempKeys[j] = tempKeys[j-1];
             tempPointers[j+1] = tempPointers[j];
@@ -97,19 +102,21 @@ void BPTree::insertInternal(keys_struct x, Node* cursor, Node* child)
         // }
 
         // tempPointers[i+1] = child;  //set new pointer
-        // cout << "Temp keys!" << endl;
-        // for (int i = 0; i < MAX + 1; i++)
-        // {
-        //     cout << tempKeys[i].key_value << ",";
-        // }
+        if (x.key_value == 227 || x.key_value == 148)
+        {
+          cout << "Temp keys!" << endl;
+          for (int i = 0; i < MAX + 1; i++)
+          {
+              cout << tempKeys[i].key_value << ",";
+          }
 
-        // cout << "Temp pointers" << endl;
-        // for (int i = 0; i < MAX + 2; i++)
-        // {
-        //     cout << tempPointers[i]->key[0].key_value << ",";
-        // }
-        // cout << endl;
-
+          cout << "Temp pointers" << endl;
+          for (int i = 0; i < MAX + 2; i++)
+          {
+              cout << tempPointers[i]->key[0].key_value << ",";
+          }
+          cout << endl;
+        }
         // split cursor to cursor and newInternal with half of original size
         cursor->size = (MAX+1)/2;
         newInternal->size = MAX-(MAX+1)/2;
@@ -120,7 +127,9 @@ void BPTree::insertInternal(keys_struct x, Node* cursor, Node* child)
             cursor->ptr[i] = tempPointers[i];
         }
         cursor->ptr[cursor->size] = tempPointers[i];
-        // set keys and pointers of new node
+
+        // Set keys and pointers of new node.
+        // Skip the first key of the new internal node.
         for (i = 0, j = cursor->size+1; i < newInternal->size; i++, j++){
             newInternal->key[i] = tempKeys[j];
             newInternal->ptr[i] = tempPointers[j];
@@ -130,51 +139,105 @@ void BPTree::insertInternal(keys_struct x, Node* cursor, Node* child)
         //     newInternal->ptr[i] = tempPointers[j];
         // }
         // the note we are splitting is a root node
-        // cout << "First node keys" << endl;
-        // for (int i = 0; i < cursor->size; i++)
-        // {
-        //     cout << cursor->key[i].key_value << ",";
-        // }
-        //  cout << "First node pointers" << endl;
-        // for (int i = 0; i < cursor->size + 1; i++)
-        // {
-        //     cout << cursor->ptr[i]->key[0].key_value << ",";
-        // }
+        if (x.key_value == 227 || x.key_value == 148)
+        {
+          cout << "First node keys" << endl;
+          for (int i = 0; i < cursor->size; i++)
+          {
+              cout << cursor->key[i].key_value << ",";
+          }
+          cout << "First node pointers" << endl;
+          for (int i = 0; i < cursor->size + 1; i++)
+          {
+              cout << cursor->ptr[i]->key[0].key_value << ",";
+          }
 
-        // cout << "Second node keys" << endl;
-        // for (int i = 0; i < newInternal->size; i++)
-        // {
-        //     cout << newInternal->key[i].key_value << ",";
-        // }
-        //  cout << "Second node pointers" << endl;
-        // for (int i = 0; i < newInternal->size + 1; i++)
-        // {
-        //     cout << newInternal->ptr[i]->key[0].key_value << ",";
-        // }
+          cout << "Second node keys" << endl;
+          for (int i = 0; i < newInternal->size; i++)
+          {
+              cout << newInternal->key[i].key_value << ",";
+          }
+          cout << "Second node pointers" << endl;
+        }
+        for (int i = 0; i < newInternal->size + 1; i++)
+        {
+            cout << newInternal->ptr[i]->key[0].key_value << ",";
+        }
 
         if (root == cursor)
         {
             //creation of new node when splitting root node
             Node* newRoot = new Node;
             numNode ++;
-            newRoot->key[0] = newInternal->ptr[0]->key[0];
-            // cout << "New root key: " << newRoot->key[0].key_value << endl;
+            keys_struct newKey = getNewKey(newInternal);
+            newRoot->key[0] = newKey;
             newRoot->ptr[0] = cursor;
-            // cout << "New root pointer 0 " << newRoot->ptr[0]->key[0].key_value << endl;
             newRoot->ptr[1] = newInternal;
-           //   cout << "New root pointer 1 " << newRoot->ptr[1]->key[0].key_value << endl;
             newRoot->isLeaf = false;
             newRoot->size = 1;
             root = newRoot;
-            //cout<<"Created new root\n";
+            cout<<"Created new root!" << endl;
         }
         else
-        {   // recursive DFS to find parent node
-            insertInternal(newInternal->ptr[0]->key[0], findParent(root, cursor), newInternal);
+        {   // New key that should be added in the parent node.
+            keys_struct newKey = getNewKey(newInternal);
+            if (x.key_value == 227 || x.key_value == 148)
+            {
+              cout << "NEW KEY " << newKey.key_value << endl;
+            }
+            insertInternal(newKey, findParent(root, cursor), newInternal);
         }
     }
 }
 
+bool BPTree:: checkValid(Node* cursor, float insert)
+{
+    while (!cursor->isLeaf)
+    {
+      cursor = cursor->ptr[0];
+    }
+    int i = 0;
+    while (cursor != nullptr && cursor->key[i].key_value <= 42764) 
+    {
+      for (int i = 1; i < cursor->size; i++)
+      {
+          if (cursor->key[i].key_value <= cursor->key[i-1].key_value)
+          {
+              return false;
+          }
+      }
+      if (i == cursor->size - 1 && cursor->ptr[cursor->size] != nullptr && cursor->key[i].key_value <= 42764) 
+      {
+          if (cursor->ptr[cursor->size]->key[0].key_value >= cursor->key[i].key_value)
+          {
+            return false;
+          }
+          cursor = cursor->ptr[cursor->size];
+          i = 0;
+          continue;
+      }
+      else{
+        break;
+      }
+      i++;
+    }
+    return true;;
+
+}
+/**
+ * @brief Get the key that is the smallest on the right subtree.
+ * 
+ * @param cursor Current node
+ * @return keys_struct the smallest key
+ */
+keys_struct BPTree:: getNewKey(Node* cursor)
+{
+    while (!cursor->isLeaf)
+    {
+        cursor = cursor->ptr[0];
+    }
+    return cursor->key[0];
+}
 
 /**
  * @brief 
@@ -182,9 +245,8 @@ void BPTree::insertInternal(keys_struct x, Node* cursor, Node* child)
  * @param x 
  * @param newKey 
  */
-void BPTree::insert(keys_struct x) {
-//   cout << root << endl;
-  // insert logic
+void BPTree::insert(keys_struct x) 
+{
   if (root == nullptr) 
   {
     root = new Node;
@@ -203,39 +265,52 @@ void BPTree::insert(keys_struct x) {
     // possibly containing the key.
     while (!cursor->isLeaf) 
     {
-        int i;
+        parent = cursor;
         if (x.key_value >= cursor->key[cursor->size -1].key_value)
         {
-            i = cursor->size;
+            cursor = cursor->ptr[cursor->size];
         }
         else
         {
              // // Iterate through the keys to find the relevant key/ptr
-            i = 0;
+            int i = 0;
             while (x.key_value >= cursor->key[i].key_value) i++;
+            cursor = cursor->ptr[i];
         }
-        parent = cursor;
-        cursor = cursor->ptr[i];
     }
     // Cursor is now the leaf node in which the new key will be inserted.
     // If there is space to insert the new key.
+     for (int k = 0; k < cursor->size; k++)
+     {
+        if (cursor->key[k].key_value == x.key_value)
+      {
+         cursor->key[k].add_vect.push_back(x.add_vect[0]);
+        if (x.key_value == 1240)
+        {
+          cout << "Numberof records: " << cursor->key[k].add_vect.size() << endl;
+        }
+         return;
+      }
+     }
+        if (x.key_value == 1240)
+        {
+            cout << "DOES NOT EXIST" << endl;
+            printTree(root);
+        }
+     // There is space for new element.
     if (cursor->size < MAX) {
          //cout <<  "LESS THAN MAX!" <<endl;
       int i = 0;
 
       // Continue iterating while cursor has not reached the last key and the key to be inserted is larger
       // than the current key.
+      if (x.key_value > cursor->key[cursor->size - 1].key_value)
+      {
+          i = cursor->size;
+      }
       while (i < cursor->size && x.key_value > cursor->key[i].key_value) {
           i++;
       }
-      if (cursor->key[i].key_value == x.key_value)
-      {
-        // Insert into LL
-        //  cout << cursor->key[i].key_value <<  " already exists." <<endl;
-         cursor->key[i].add_vect.push_back(x.add_vect[0]);
-        //  cout << "Number of keys: " << cursor->key[i].add_vect.size() <<endl;
-      }
-      else {
         // Make space for new key
         for (int j = cursor->size; j > i; j--) 
         {
@@ -250,16 +325,20 @@ void BPTree::insert(keys_struct x) {
         cursor->ptr[cursor->size - 1] = NULL;
         // cout<<"Inserted "<< x.key_value << " " << x.add_vect[0] <<"
         // successfully\n";
-      }
-      //Overflow, due to insufficient space to insert new key.
-    } else {
+        return;
+    
+    }
+         //Overflow, due to insufficient space to insert new key. 
+    else
+    {
             // cout <<  "MORE THAN MAX!" <<endl;
       Node *newLeaf = new Node;
       newLeaf->isLeaf = true;
 
       // Create a temp node to accommodate all the keys and insert x into it
       keys_struct tempNode[MAX + 1];
-      for (int i = 0; i < MAX; i++) { //cursor-size == MAX
+      for (int i = 0; i < MAX; i++) 
+      {
         tempNode[i] = cursor->key[i];
         // Copy pointers????
       }
@@ -269,28 +348,18 @@ void BPTree::insert(keys_struct x) {
       {
         tempNode[MAX] = x;
         numNode++;
-
       }
       else 
       {
         int i = 0;
         while (x.key_value > tempNode[i].key_value) i++;
-
-        // Key is already present
-        if (cursor->key[i].key_value == x.key_value) 
-        {
-        //   cout << cursor->key[i].key_value <<  " already exists." <<endl;
-          cursor->key[i].add_vect.push_back(x.add_vect[0]);
-        //   cout << "Number of keys: " << cursor->key[i].add_vect.size() <<endl;
-          return;
-        }
         numNode++;
 
         // cout << x.key_value << " is not present." << endl;
 
         // Create space for new key in virtual node.
         //TODO: should be max???
-        for (int j = MAX + 1; j > i; j--) 
+        for (int j = MAX; j > i; j--) 
         {
           tempNode[j] = tempNode[j - 1];
         }
@@ -310,7 +379,7 @@ void BPTree::insert(keys_struct x) {
 
       // Set the rightmost pointer of the new leaf node to the next leaf node.
       newLeaf->ptr[newLeaf->size] = cursor->ptr[MAX];
-      cursor->ptr[MAX] = NULL;
+      cursor->ptr[MAX] = nullptr;    
 
       // Distribute elements to the two new leaf nodes.
       int i;
@@ -318,7 +387,6 @@ void BPTree::insert(keys_struct x) {
       {
         cursor->key[i] = tempNode[i];
       }
-
       for (int j = 0; j < newLeaf->size; i++, j++) 
       {
         newLeaf->key[j] = tempNode[i];
@@ -343,7 +411,7 @@ void BPTree::insert(keys_struct x) {
       } 
       else 
       {
-        // Insert new key in parent node.
+        // Insert first key of new leaf intp parent node.
         insertInternal(newLeaf->key[0], parent, newLeaf);
       }
     }
@@ -370,15 +438,6 @@ int BPTree::removeInternal(keys_struct x, Node* cursor, Node* child, Node* newNo
         // Check if the adjacent pointers of the first key points to child.
         if (cursor->ptr[0] == child || cursor->ptr[1] == child)
         {
-            // // check if larger pointer points to child
-            // if(cursor->ptr[1] == child){
-            //     // set new root to other child
-            //     root = cursor->ptr[0];
-            // }
-            // else {
-            //     // set new root to other child
-            //    root = cursor->ptr[1];
-            // }
             root = cursor->ptr[0] == child ? cursor->ptr[1]: cursor->ptr[0]; 
 
             // Delete child node.
@@ -397,23 +456,22 @@ int BPTree::removeInternal(keys_struct x, Node* cursor, Node* child, Node* newNo
             delete cursor;
             numNode--;
             cout << "Deleted 1" << endl;
-            //cout<<"Changed root node\n";
             return 0;
         }
     }
 
-    cout << "Current cursor keys: " << endl;
-    for (int k = 0; k < cursor->size; k++)
-    {
-        cout << cursor->key[k].key_value << "|";
-    }
-    cout << endl;
-    cout << "Current cursor pointers: " << endl;
-    for (int k = 0; k < cursor->size + 1; k++)
-    {
-        cout << cursor->ptr[k]->key[0].key_value << "|";
-    }
-    cout << endl;
+    // cout << "Current cursor keys: " << endl;
+    // for (int k = 0; k < cursor->size; k++)
+    // {
+    //     cout << cursor->key[k].key_value << "|";
+    // }
+    // cout << endl;
+    // cout << "Current cursor pointers: " << endl;
+    // for (int k = 0; k < cursor->size + 1; k++)
+    // {
+    //     cout << cursor->ptr[k]->key[0].key_value << "|";
+    // }
+    // cout << endl;
     // Search for the key that is to be deleted.
     int pos = 0;
     while (pos < cursor->size && x.key_value != cursor->key[pos].key_value) pos++;
@@ -448,20 +506,20 @@ int BPTree::removeInternal(keys_struct x, Node* cursor, Node* child, Node* newNo
         return 0;
     }
 
-    cout<< "Internal node has insufficient keys!" << endl;
+    // cout<< "Internal node has insufficient keys!" << endl;
 
-    cout << "Current cursor keys: " << endl;
-    for (int k = 0; k < cursor->size; k++)
-    {
-        cout << cursor->key[k].key_value << "|";
-    }
-    cout << endl;
-    cout << "Current cursor pointers: " << endl;
-    for (int k = 0; k < cursor->size + 1; k++)
-    {
-        cout << cursor->ptr[k]->key[0].key_value << "|";
-    }
-    cout << endl;
+    // cout << "Current cursor keys: " << endl;
+    // for (int k = 0; k < cursor->size; k++)
+    // {
+    //     cout << cursor->key[k].key_value << "|";
+    // }
+    // cout << endl;
+    // cout << "Current cursor pointers: " << endl;
+    // for (int k = 0; k < cursor->size + 1; k++)
+    // {
+    //     cout << cursor->ptr[k]->key[0].key_value << "|";
+    // }
+    // cout << endl;
     // when reach here, size is too small(underflow)
 
     // ignore minimum size if node is root
@@ -841,16 +899,16 @@ Node *BPTree::findParent(Node *cursor, Node *child) {
   return parent;
 }
 
-BPTree::BPTree() : root{NULL} {}
 
-void BPTree::searchRange(float lowerBoundKey, float upperBoundKey) 
+void BPTree::searchRange(float lowerBoundKey, float upperBoundKey, unordered_map<int, int> hmap) 
 {
     int numIndexNodes = 0;
     if (root == nullptr) 
     {
         throw std:: logic_error("Tree is empty!");
     } 
-    else {
+    else 
+    {
         Node *cursor = root;
         //While leaf node is not reached yet.
         int level = 0;
@@ -876,44 +934,60 @@ void BPTree::searchRange(float lowerBoundKey, float upperBoundKey)
            }
            level++;
         }
-        cout << "Number of index nodes: " << numIndexNodes << endl;
+        cout << "Number of index nodes accessed: " << numIndexNodes << endl;
         //Here, we are at the leaf nodes. We then traverse through the nodes from the lowerBoundKey to the upperBoundKey.
         int i = 0;
-        // cout << "Key index: " << cursor->key[i].key_value << endl;
         while (cursor->key[i].key_value < lowerBoundKey) i++;
-        // cout << "Key index: " << cursor->key[i].key_value << endl;
         float totalRating = 0;
         int totalRecords = 0;
-        // cout << "Leaf nodes accessed: " << numIndexNodes << endl;
-        // for (int k = 0; k < cursor->size; k++)
-        // {
-        //      cout << cursor->key[k].key_value << "|";
-        // }
+        set<uint> s;
         while (cursor->key[i].key_value <= upperBoundKey) 
         {
-            // cout << "Record value: " << cursor->key[i].key_value << endl;
-            // cout << "Number of records: " << cursor->key[i].add_vect.size() << endl;
-            totalRecords += cursor->key[i].add_vect.size();
-            for (int j = 0; j < cursor->key[i].add_vect.size(); ++j) {
-                //printf("Data Block: ");
-                //printf("%p", (uchar *) cursor->key[i].add_vect[j]);
-                //printf("\n");
-                //printf("tconst: ");
-                totalRating +=(*(Record *)cursor->key[i].add_vect[j]).averageRating;
+            int numVotes = cursor->key[i].key_value;
+            if (hmap.find(numVotes) != hmap.end())
+            {
+                if (hmap[numVotes] != cursor->key[i].add_vect.size())
+                {
+                    cout << "Num records with: " << numVotes << " is different! Expected: " << hmap[numVotes] << ", Actual: " << cursor->key[i].add_vect.size() << endl;
+                }
+                else
+                {
+                    hmap.erase(numVotes);
+                }
             }
-            if (i == cursor->size - 1 && cursor->ptr[cursor->size] != NULL && cursor->key[i].key_value <= upperBoundKey) {
+            else
+            {
+                cout << "Num votes: " << numVotes << " does not exist!" << endl;
+            }
+            for (int j = 0; j < cursor->key[i].add_vect.size(); j++) 
+            {
+                float averageRating = (*(Record *)cursor->key[i].add_vect[j]).averageRating;
+                totalRating += averageRating;
+                intptr_t dataBlockNo = ((intptr_t)(Record *)cursor->key[i].add_vect[j] - (intptr_t) startAddress)/ blockSize;
+                s.insert(dataBlockNo);
+                totalRecords++;
+                // get tconst value
+                // cout << (*(Record *)cursor->key[i].add_vect[j]).tconst << " | "
+                //         // get record address
+                //         << (Record *)cursor->key[i].add_vect[j] << " | "
+                //         // get block no
+                //         << dataBlockNo << " | "
+                //         // get block addr
+                //         << (Record *)((intptr_t)startAddress + (dataBlockNo * blockSize))
+                //         << endl;
+            }
+            if (i == cursor->size - 1 && cursor->ptr[cursor->size] != nullptr && cursor->key[i].key_value <= upperBoundKey) 
+            {
                 cursor = cursor->ptr[cursor->size];
-                // cout << endl; 
-                // for (int k = 0; k < cursor->size; k++)
-                // {
-                //      cout << cursor->key[k].key_value << "|";
-                // }
                 i = 0;
                 continue;
             } 
             i++;
         }
+        cout << "Total number of records: " << totalRecords << endl;
+        cout << "Total rating: " << totalRating << endl;
         cout << "Average Rating: " << totalRating / totalRecords << endl;
+        cout << "Number of data blocks accessed: " << s.size() << endl;
     }
 }
 
@@ -951,32 +1025,44 @@ void BPTree::searchSingle(float key)
            }
            level++;
         }
-        cout << "Number of index nodes: " << numIndexNodes << endl;
+        cout << "Number of index nodes accessed: " << numIndexNodes << endl;
         int i = 0;
         // cout << "Key index: " << cursor->key[i].key_value << endl;
         while (cursor->key[i].key_value < key) i++;
         // cout << "Key index: " << cursor->key[i].key_value << endl;
         float totalRating = 0;
+        set<uint> s;
         if (cursor->key[i].key_value == key) 
         {
             cout << "Number of records: " << cursor->key[i].add_vect.size() << endl;
-            for (int j = 0; j < cursor->key[i].add_vect.size(); ++j) {
-                //printf("Data Block: ");
-                //printf("%p", (uchar *) cursor->key[i].add_vect[j]);
-                //printf("\n");
-                //printf("tconst: ");
+            for (int j = 0; j < cursor->key[i].add_vect.size(); j++) {
                 //cout << (*(Record *) cursor->key[i].add_vect[j]).tconst << "\n";
                 totalRating +=(*(Record *)cursor->key[i].add_vect[j]).averageRating;
+                         intptr_t dataBlockNo = ((intptr_t)(Record *)cursor->key[i].add_vect[j] - (intptr_t) startAddress)/ blockSize;
+                s.insert(dataBlockNo);
+                // get tconst value
+                // cout << (*(Record *)cursor->key[i].add_vect[j]).tconst << " | "
+                //         // get record address
+                //         << (Record *)cursor->key[i].add_vect[j] << " | "
+                //         // get block no
+                //         << dataBlockNo << " | "
+                //         // get block addr
+                //         << (Record *)((intptr_t)startAddress + (dataBlockNo * blockSize))
+                //         << endl;
             }
         }
+        else
+        {
+            cout << "Does not exist!" << endl;
+        }
         cout << "Average Rating: " << totalRating / cursor->key[i].add_vect.size() << endl;
+        cout << "Number of data blocks accessed: " << s.size() << endl;
     }
 }
 
-// recursively traverse tree to find height
+// Recursively traverse tree to find height.
 int BPTree::height(Node *cursor) {
  if (cursor->isLeaf) {
-    // reached leaf
     return 1;
   } 
   return height(cursor->ptr[0]) + 1;
@@ -1028,7 +1114,7 @@ void BPTree::printTree(Node *cursor) {
     // Create an empty queue for level order traversal
     queue<Node *> q;
  
-    // Enqueue Root and initialize height
+    // Enqueue root
     q.push(cursor);
  
     while (!q.empty())
@@ -1057,6 +1143,46 @@ void BPTree::printTree(Node *cursor) {
     }
 }
 
+int BPTree::calculateNumNodes(Node *cursor) {
+ // Base Case
+    if (cursor == NULL)  return 0;
+ 
+    // Create an empty queue for level order traversal
+    queue<Node *> q;
+ 
+    // Enqueue root
+    q.push(cursor);
+
+    int numNodes = 0;
+ 
+    while (!q.empty())
+    {
+        int queueSize = q.size();
+        numNodes += queueSize;
+
+        for (int i = 0; i < queueSize; i++)
+        {
+            // Print front of queue and remove it from queue
+            Node *node = q.front();
+            for (int i = 0; i < node->size; i++)
+            {
+                if (!node->isLeaf)
+                {
+                    q.push(node->ptr[i]);
+                }
+            }
+            if (!node->isLeaf)
+            {
+              q.push(node->ptr[node->size]);  
+            }
+            q.pop();
+        }
+    }
+    return numNodes;
+}
+
 int BPTree::getMax() { return MAX; }
 
 Node *BPTree::getRoot() { return root; }
+
+BPTree::BPTree() : root{NULL} {}
