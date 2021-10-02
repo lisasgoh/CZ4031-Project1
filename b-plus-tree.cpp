@@ -15,7 +15,7 @@ Node::Node()
 }
 
 /**
- * @brief 
+ * @brief
  * Inserts a new internal node in tree.
  * @param x The key to be added to the parent internal node.
  * @param cursor The parent.
@@ -141,7 +141,7 @@ keys_struct BPTree::getNewKey(Node *cursor)
 }
 
 /**
- * @brief 
+ * @brief
  * Insert key into tree.
  * @param x Key to be inserted.
  */
@@ -245,10 +245,7 @@ void BPTree::insert(keys_struct x)
           i++;
         numNode++;
 
-        // cout << x.key_value << " is not present." << endl;
-
         // Create space for new key in virtual node.
-        //TODO: should be max???
         for (int j = MAX; j > i; j--)
         {
           tempNode[j] = tempNode[j - 1];
@@ -288,7 +285,7 @@ void BPTree::insert(keys_struct x)
         Node *newRoot = new Node;
         numNode++;
 
-        //Set the new root's key to be the left bound of the right child.
+        // Set the new root's key to be the left bound of the right child.
         newRoot->key[0] = newLeaf->key[0];
         newRoot->ptr[0] = cursor;
         newRoot->ptr[1] = newLeaf;
@@ -308,7 +305,7 @@ void BPTree::insert(keys_struct x)
 }
 
 /**
- * @brief 
+ * @brief
  * Remove internal node.
  * @param x The key of the node to be removed.
  * @param cursor Parent.
@@ -527,7 +524,7 @@ int BPTree::removeInternal(keys_struct x, Node *cursor, Node *child, Node *newNo
 }
 
 /**
- * @brief 
+ * @brief
  * Remove key from tree.
  * @param x Key to be removed.
  * @return int Number of removed nodes.
@@ -718,8 +715,7 @@ int BPTree::remove(keys_struct x)
       return 1 + numNodeMerged;
     }
     // Else if right sibling exists, merge with it.
-    else if (rightSibling <= parent->size)
-    {
+    else if (rightSibling <= parent->size) {
       cout << "Merged with right sibling!" << endl;
       Node *rightNode = parent->ptr[rightSibling];
 
@@ -746,11 +742,11 @@ int BPTree::remove(keys_struct x)
 }
 
 /**
- * @brief 
+ * @brief
  * Use depth-first search to find parent of child.
  * @param cursor Possible parent.
  * @param child Child.
- * @return Node* 
+ * @return Node*
  */
 Node *BPTree::findParent(Node *cursor, Node *child)
 {
@@ -784,7 +780,7 @@ Node *BPTree::findParent(Node *cursor, Node *child)
 }
 
 /**
- * @brief 
+ * @brief
  * Search for leaf nodes within a specified range.
  * @param lowerBoundKey Lower range.
  * @param upperBoundKey Upper range.
@@ -866,7 +862,7 @@ void BPTree::searchRange(float lowerBoundKey, float upperBoundKey)
 }
 
 /**
- * @brief 
+ * @brief
  * Search for a single leaf node with a specified key value.
  * @param key Key to be searched for.
  */
@@ -941,7 +937,7 @@ void BPTree::searchSingle(float key)
 }
 
 /**
- * @brief 
+ * @brief
  * Recursively traverse tree to find height.
  * @param cursor
  * @return int Height of tree.
@@ -956,7 +952,7 @@ int BPTree::getHeight(Node *cursor)
 }
 
 /**
- * @brief 
+ * @brief
  * Prints entire tree.
  * @param cursor Root node.
  */
@@ -1021,7 +1017,7 @@ void BPTree::display(Node *cursor)
 }
 
 /**
- * @brief 
+ * @brief
  * Calculate the number of nodes with BFS.
  * @param cursor Root node.
  * @return int number of nodes in tree.

@@ -35,7 +35,7 @@ class BPTree
 {
   Node *root;
   /**
-   * @brief 
+   * @brief
    * Insert internal node.
    * @param x Key to be added to the parent node.
    * @param cursor Parent node.
@@ -44,7 +44,7 @@ class BPTree
   void insertInternal(keys_struct x, Node *cursor, Node *child);
 
   /**
-   * @brief 
+   * @brief
    * Remove internal node.
    * @param x Key of node to be removed.
    * @param cursor Parent.
@@ -55,19 +55,19 @@ class BPTree
   int removeInternal(keys_struct x, Node *cursor, Node *child, Node *newNode);
 
   /**
-   * @brief 
+   * @brief
    * Find parent of child.
-   * @param cursor 
-   * @param child 
-   * @return Node* 
+   * @param cursor
+   * @param child
+   * @return Node*
    */
   Node *findParent(Node *cursor, Node *child);
 
   /**
    * @brief
    * Get new key to be added to parent node.
-   * @param cursor 
-   * @return keys_struct 
+   * @param cursor
+   * @return keys_struct
    */
   keys_struct getNewKey(Node *cursor);
   int numNode = 0;
@@ -75,14 +75,14 @@ class BPTree
 public:
   BPTree();
   /**
-   * @brief 
+   * @brief
    * Search for the leaf node with key.
    * @param key Key value to search for.
    */
   void searchSingle(float key);
 
   /**
-   * @brief 
+   * @brief
    * Search for leaf nodes within the key boundaries.
    * @param lowerKeyBound lower boundary of key.
    * @param upperKeyBound upper boundary of key.
@@ -98,16 +98,16 @@ public:
   int getHeight(Node *cursor);
 
   /**
-   * @brief 
+   * @brief
    * Inserts key into tree.
    * @param x Key to be inserted.
    */
   void insert(keys_struct x);
 
   /**
-   * @brief 
+   * @brief
    * Removes key from tree.
-   * @param x 
+   * @param x
    * @return int Number of nodes deleted.
    */
   int remove(keys_struct x);
@@ -123,28 +123,28 @@ public:
 
   /**
    * @brief Get the number of nodes.
-   * 
+   *
    * @return int number of nodes in tree.
    */
   int getNumNodes() { return numNode; }
 
   /**
-   * @brief 
+   * @brief
    * Use breadth first search to calculate the number of nodes in tree.
-   * @param cursor 
+   * @param cursor
    * @return int number of nodes in tree.
    */
   int calculateNumNodes(Node *cursor);
 
   /**
-   * @brief 
+   * @brief
    * Prints entire tree.
    * @param cursor Root node.
    */
   void printEntireTree(Node *cursor);
 
   /**
-   * @brief 
+   * @brief
    * Prints only root node and 1st child node.
    * @param cursor Root node.
    */
