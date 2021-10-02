@@ -715,7 +715,8 @@ int BPTree::remove(keys_struct x)
       return 1 + numNodeMerged;
     }
     // Else if right sibling exists, merge with it.
-    else if (rightSibling <= parent->size) {
+    else if (rightSibling <= parent->size)
+    {
       cout << "Merged with right sibling!" << endl;
       Node *rightNode = parent->ptr[rightSibling];
 
