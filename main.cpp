@@ -36,7 +36,17 @@ int main() {
   // Storage Implementation
   cout << "Data reading in progress...\n";
 
-  ifstream data_file("data/data.tsv");
+  ifstream data_file("data/data_short.tsv");
+
+  cout << "Select the size of each data block.\n" << "1. 100B\n2. 500B\n";
+  int choice = 0;
+  uint block_size = 0;
+
+  cin >> choice;
+  if (int(choice) == 1) block_size = 100;
+  else block_size = 500;
+
+  cout << "Block size of " << block_size << "B selected.\n";
 
   // Initialise memory pool
   // MemoryPool::MemoryPool(uint poolSize, uint blockSize)

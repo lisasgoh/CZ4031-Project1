@@ -331,6 +331,7 @@ int BPTree::removeInternal(keys_struct x, Node *cursor, Node *child,
   if (cursor->size >= (MAX + 1) / 2 - 1 || cursor == root) {
     cout << "Deleted " << x.key_value << " "
          << " from internal node successfully\n";
+    numNode--;
     return 0;
   }
   // Try to get transfer keys from sibling nodes.
@@ -523,6 +524,7 @@ int BPTree::remove(keys_struct x) {
     {
       cout << "Deleted " << x.key_value << " "
            << "from leaf node successfully\n";
+      numNode--;
       for (int i = 0; i < MAX + 1; i++) {
         cursor->ptr[i] = nullptr;
       }
@@ -545,6 +547,7 @@ int BPTree::remove(keys_struct x) {
     cursor->ptr[cursor->size + 1] = nullptr;
     cout << "Deleted " << x.key_value << " "
          << " from leaf node successfully\n";
+    numNode--;
 
     // There are sufficient keys in node.
     if (cursor->size >= (MAX + 1) / 2) {
