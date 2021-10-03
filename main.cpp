@@ -208,6 +208,7 @@ void experiment_5(BPTree root, int numVotes) {
   int numNodeRemoved = numNodeBeforeRemoval - numNodeAfterRemoval;
 
   cout << "\nNumber of Nodes Deleted: " << numNodeRemoved << "\n";
+  cout << "\nNumber of Nodes Merged: " << numNodeMerged << "\n";
 
   cout << "\nNumber of Nodes in Updated B+ Tree: " << numNodeAfterRemoval
        << "\n";
