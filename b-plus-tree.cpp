@@ -372,8 +372,7 @@ int BPTree::removeInternal(keys_struct x, Node *cursor, Node *child)
   // Minimum size is irrelevant if node is root.
   if (cursor->size >= (MAX + 1) / 2 - 1 || cursor == root)
   {
-    cout << "Deleted " << x.key_value << " "
-         << " from internal node successfully\n";
+    cout << "Deleted " << x.key_value << " " << " from internal node successfully" << endl;
     numNode--;
     return 0;
   }
@@ -623,19 +622,19 @@ int BPTree::remove(keys_struct x)
     cursor->pointers[cursor->size] = cursor->pointers[cursor->size + 1];
     cursor->pointers[cursor->size + 1] = nullptr;
     cout << "Deleted " << x.key_value << " "
-         << " from leaf node successfully\n";
+         << " from leaf node successfully" << endl;
     numNode--;
 
+    // Update parent if necessary (When position of key in leaf node to be removed is 0).
+    if (pos == 0)
+    {
+      cout << "Update parent!" << endl;
+      updateParent(cursor, cursor->keys[0]);
+    }
     // There are sufficient keys in node.
     if (cursor->size >= (MAX + 1) / 2)
     {
       cout << "Sufficient nodes!" << endl;
-      // Update parent if necessary (When position of key in leaf node to be removed is 0).
-      if (pos == 0)
-      {
-        cout << "Update parent!" << endl;
-        updateParent(cursor, cursor->keys[0]);
-      }
       return 0;
     }
 
