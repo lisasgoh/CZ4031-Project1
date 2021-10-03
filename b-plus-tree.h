@@ -11,25 +11,28 @@
 
 using namespace std;
 
-struct keys_struct {
+struct keys_struct
+{
   float key_value;         // Key value.
   vector<void *> add_vect; // List of records with same key.
 };
 
 class BPTree;
 
-class Node {
-  bool isLeaf;      // Whether node is a leaf node.
-  keys_struct *key; // Pointer to array of keys in node.
-  int size;         // Number of keys in node.
-  Node **ptr;       // Pointer to array of pointers in node.
+class Node
+{
+  bool isLeaf;       // Whether node is a leaf node.
+  keys_struct *keys; // Pointer to array of keys in node.
+  int size;          // Number of keys in node.
+  Node **pointers;   // Pointer to array of pointers in node.
   friend class BPTree;
 
 public:
   Node();
 };
 
-class BPTree {
+class BPTree
+{
   Node *root;
   /**
    * @brief
@@ -46,10 +49,9 @@ class BPTree {
    * @param x Key of node to be removed.
    * @param cursor Parent.
    * @param child The removed node.
-   * @param newNode The retained node,
    * @return int Number of nodes deleted.
    */
-  int removeInternal(keys_struct x, Node *cursor, Node *child, Node *newNode);
+  int removeInternal(keys_struct x, Node *cursor, Node *child);
 
   /**
    * @brief
@@ -59,6 +61,14 @@ class BPTree {
    * @return Node*
    */
   Node *findParent(Node *cursor, Node *child);
+
+  /**
+   * @brief 
+   * Update correct parent when key is being deleted from leaf node.
+   * @param child 
+   * @param key The new key.
+   */
+  void updateParent(Node *child, keys_struct key);
 
   /**
    * @brief
