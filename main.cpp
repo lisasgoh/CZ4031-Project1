@@ -34,11 +34,11 @@ int main() {
        << "\n";
 
   // Storage Implementation
-  cout << "Data reading in progress...\n";
+  string dataset_file = "data.tsv";
+  ifstream data_file("data/" + dataset_file);
+  cout << "Reading " << dataset_file << " in progress...\n";
 
-  ifstream data_file("data/data_short.tsv");
-
-  cout << "Select the size of each data block.\n" << "1. 100B\n2. 500B\n";
+  cout << "\nSelect the size of each data block.\n" << "1. 100B\n2. 500B\n";
   int choice = 0;
   uint block_size = 0;
 
